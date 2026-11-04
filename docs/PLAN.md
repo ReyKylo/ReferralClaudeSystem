@@ -2,7 +2,7 @@
 
 Dokumen ini menerjemahkan PRD *Referral Management & Daily Operations System* menjadi rencana yang bisa langsung dikerjakan.
 Status: **fondasi database selesai dan sudah dites** (`supabase/migrations/20261104120000_ref_init.sql`, tes di `tests/sql/`).
-Migrasinya **belum dipasang** ke Supabase. Tampilan (wireframe) menunggu jawaban soal PaveCode (Q1).
+Migrasinya **belum dipasang** ke Supabase. Wireframe interaktif ada di `wireframe/index.html` (buka langsung di browser).
 
 Prinsip PRD: *One Referral Portal. One Central Database. One Internal ERP.*
 
@@ -156,12 +156,27 @@ Di lokal, `ERP_DIR=../ERPClaudeKita tests/sql/run.sh` menjalankannya di atas mig
 
 UI ERP tetap dua bahasa (ID + 中文) seperti layar lain. Portal dalam Bahasa Indonesia.
 
+### 5b. Tampilan: CodePave
+
+Portal dan layar referral memakai identitas **CodePave** (Brand Guide v1.0, 2 Nov 2026):
+
+| Elemen | Pemakaian di aplikasi |
+|---|---|
+| Warna | Asphalt `#0B1F24` untuk sidebar, teks, dan header tabel. Cone Orange `#FF5B1F` untuk tombol utama dan angka penting. Signal Mint `#4FE0C0` untuk status berhasil. Lane Teal `#14564F` untuk progress dan header tabel di mode gelap. Concrete `#E8EBE9` untuk latar. Cone Tint `#FFE4D6` untuk kotak catatan |
+| Aturan kontras | Teks di atas oranye selalu Asphalt, tidak pernah putih (putih di atas oranye hanya 3,1:1) |
+| Huruf | Overpass (400/600/800/900) untuk judul dan isi. Overpass Mono untuk label, eyebrow, angka, dan kode |
+| Bentuk | Sudut 4 px, garis putus-putus seperti marka jalan, kartu angka disusun naik-turun seperti pola bata, pola paving pudar di pojok kanan bawah, label section berupa pil Asphalt dengan blok oranye |
+| Logo | `codepave` horizontal versi negatif di sidebar Asphalt; blok AI tetap oranye |
+| Badge | Selesai/berhasil = mint, perlu cek = cone tint, draf = concrete, ditolak/tidak bisa = merah semantik |
+
+Mode terang dan gelap sama-sama disiapkan. Layar ERP yang sudah ada tidak diubah oleh keputusan ini.
+
 ## 6. Fase (sesuai PRD bagian 13)
 
 | Fase | Isi | Status |
 |---|---|---|
 | 0 | Skema database lengkap untuk semua fase + tes + rencana ini | **Selesai (PR ini)** |
-| 0b | Wireframe interaktif portal + layar ERP | Menunggu Q1 |
+| 0b | Wireframe interaktif portal + layar ERP (`wireframe/index.html`) | **Selesai** |
 | 1 | Login portal, daftar peserta, layar Peserta di ERP, review | Berikutnya |
 | 2 | Kalender jadwal, target, H-1 + WhatsApp, dashboard harian | |
 | 3 | Komisi, wallet, pencairan, bukti bayar | |
@@ -173,7 +188,7 @@ Database sudah mencakup fase 1 sampai 4, jadi fase berikutnya hanya membangun la
 
 | # | Pertanyaan | Default sementara |
 |---|---|---|
-| Q1 | "PaveCode" itu apa: link template, design system, atau situs referensi? | Belum dibuat sampai ada link. Cadangannya gaya ERP sekarang |
+| Q1 | ~~Tampilan~~ **Diputuskan:** identitas CodePave (Brand Guide v1.0) | Lihat bagian 5b |
 | Q2 | Komisi per peserta selesai berapa? Sama untuk semua referral? | Rp 50.000 (`settings.commission_per_completed`), bisa diubah per komisi sebelum diverifikasi |
 | Q3 | **Hubungan dengan Rekap.** Rekap ERP sudah memotong "referral Gipong/Zakar" dari bagi hasil harian. Kalau wallet juga membayar mereka, bisa terbayar dua kali. Mana yang jadi sumber pembayaran? | Setelah portal jalan, referral dibayar lewat wallet, dan baris referral di Rekap diisi dari komisi yang di-approve hari itu |
 | Q4 | "Completed" artinya apa persisnya? Apakah harus sudah jadi akun di ERP (Akun)? | Ops/admin menandai selesai; link ke akun ERP opsional |
