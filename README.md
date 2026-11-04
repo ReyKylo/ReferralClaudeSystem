@@ -6,7 +6,7 @@ referral. Semuanya memakai satu database dengan ERP (Supabase, schema `ref`).
 
 ## Isi repo
 
-- `wireframe/index.html` berisi wireframe interaktif dengan tampilan CodePave. Pilih "Lihat sebagai" untuk berganti antara portal referral, admin, dan tim operasional. Datanya contoh dan tidak tersimpan.
+- `wireframe/index.html` berisi wireframe interaktif dengan tampilan CodePave. Dibuka di layar Daftar/Masuk; pilih "Lihat sebagai" untuk berganti ke portal referral, admin, atau tim operasional. Datanya contoh dan tidak tersimpan.
 - `docs/PLAN.md` berisi rencana lengkap: arsitektur, peran, alur status, database, layar, fase, dan pertanyaan terbuka.
 - `supabase/migrations/` berisi skema `ref` untuk semua fase. **Belum dipasang** ke Supabase.
 - `supabase/create-referrer.sql` berisi template untuk membuat login referral.

@@ -15,8 +15,8 @@ create function t.eq(p_got anyelement, p_want anyelement, p_what text) returns v
 begin
   if p_got is distinct from p_want then raise exception '%: got %, want %', p_what, p_got, p_want; end if;
 end $$;
-grant usage on schema t to authenticated;
-grant execute on all functions in schema t to authenticated;
+grant usage on schema t to authenticated, anon;
+grant execute on all functions in schema t to authenticated, anon;
 
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-00000000000a', 'owner@x.id'),

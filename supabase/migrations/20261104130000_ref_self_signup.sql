@@ -1,0 +1,104 @@
+-- Self sign-up for referrals: anyone can make a portal login with username + WhatsApp number + password,
+-- no email and no verification step.
+-- STATUS: NOT applied yet (together with 20261104120000_ref_init.sql).
+--
+-- How it works
+--   Supabase Auth needs an email, so the portal turns the username into a login address that never receives mail:
+--   <username>@<settings.login_email_domain>, e.g. gipong@referral.tampilresmi.com. With "Confirm email" switched off
+--   in Supabase Auth, signUp() logs the person in straight away. The portal then calls ref.register_me(), which turns
+--   that login into a referral (a row in ref.referrers). Because the login address comes from the username, Supabase
+--   itself refuses a second account with the same username.
+--
+-- ERP safety: a self-made login has no row in erp.profiles, so the ERP's RLS shows it nothing (tested), and
+-- ref.register_me() refuses ERP logins.
+
+insert into ref.settings (key, value) values ('login_email_domain', '"referral.tampilresmi.com"');
+
+alter table ref.referrers add column username extensions.citext;
+alter table ref.referrers add constraint referrers_username_format check (username is null or username ~ '^[a-z0-9_.]{3,20}$');
+create unique index referrers_username_key on ref.referrers (username) where username is not null;
+
+-- Lowercase, 3-20 characters: letters, digits, dot, underscore.
+create or replace function ref.clean_username(p_username text)
+returns text language sql immutable set search_path = ''
+as $$ select lower(trim(coalesce(p_username, ''))) $$;
+
+-- Sign-up form check before an account is made (callable before login). Says only whether each value is still free.
+create or replace function ref.signup_available(p_username text, p_wa text)
+returns jsonb language sql stable security definer set search_path = ''
+as $$
+  select jsonb_build_object(
+    'username_valid', ref.clean_username(p_username) ~ '^[a-z0-9_.]{3,20}$',
+    'username_free', not exists (select 1 from ref.referrers where username = ref.clean_username(p_username)::extensions.citext),
+    'wa_valid', length(coalesce(erp.normalize_wa(p_wa), '')) between 10 and 15,
+    'wa_free', not exists (select 1 from ref.referrers where wa_norm = erp.normalize_wa(p_wa))
+  )
+$$;
+
+-- Called once right after signUp(). Makes the logged-in user a referral.
+create or replace function ref.register_me(p_username text, p_wa text)
+returns uuid language plpgsql security definer set search_path = ''
+as $$
+declare
+  v_user uuid := auth.uid(); v_email text; v_name text := ref.clean_username(p_username); v_id uuid;
+  v_domain text := (select value #>> '{}' from ref.settings where key = 'login_email_domain');
+begin
+  if v_user is null then raise exception 'Belum login' using errcode = '42501'; end if;
+  if exists (select 1 from erp.profiles where user_id = v_user) then
+    raise exception 'Login ini milik tim ERP, tidak bisa dijadikan referral' using errcode = '22023';
+  end if;
+  select id into v_id from ref.referrers where user_id = v_user;
+  if found then return v_id; end if;   -- already registered (e.g. the page was reloaded)
+  if v_name !~ '^[a-z0-9_.]{3,20}$' then
+    raise exception 'Username 3-20 karakter: huruf kecil, angka, titik, atau garis bawah' using errcode = '22023';
+  end if;
+  select email into v_email from auth.users where id = v_user;
+  if lower(v_email) is distinct from v_name || '@' || v_domain then
+    raise exception 'Username tidak cocok dengan login' using errcode = '22023';
+  end if;
+  if length(coalesce(erp.normalize_wa(p_wa), '')) not between 10 and 15 then
+    raise exception 'Nomor WhatsApp belum benar' using errcode = '22023';
+  end if;
+  if exists (select 1 from ref.referrers where wa_norm = erp.normalize_wa(p_wa)) then
+    raise exception 'Nomor WhatsApp ini sudah dipakai referral lain' using errcode = '23505';
+  end if;
+  insert into ref.referrers (user_id, name, username, wa) values (v_user, v_name, v_name, trim(p_wa)) returning id into v_id;
+  perform ref.audit('referrer.signup', 'referrer', v_id::text, jsonb_build_object('username', v_name));
+  perform ref.notify_admins('new_referrer', jsonb_build_object('referrer_id', v_id, 'username', v_name));
+  return v_id;
+end $$;
+
+-- A referral may change the display name later (username and login stay the same).
+create or replace function ref.update_my_profile(p_name text, p_wa text)
+returns void language plpgsql security definer set search_path = ''
+as $$
+begin
+  perform ref.require_role('referral');
+  if coalesce(trim(p_name), '') = '' then raise exception 'Isi nama' using errcode = '22023'; end if;
+  if length(coalesce(erp.normalize_wa(p_wa), '')) not between 10 and 15 then
+    raise exception 'Nomor WhatsApp belum benar' using errcode = '22023';
+  end if;
+  if exists (select 1 from ref.referrers where wa_norm = erp.normalize_wa(p_wa) and id <> ref.my_referrer_id()) then
+    raise exception 'Nomor WhatsApp ini sudah dipakai referral lain' using errcode = '23505';
+  end if;
+  update ref.referrers set name = trim(p_name), wa = trim(p_wa) where id = ref.my_referrer_id();
+  perform ref.audit('referrer.profile', 'referrer', ref.my_referrer_id()::text);
+end $$;
+
+-- Admin can switch a referral off (they can still log in but see nothing and cannot submit).
+create or replace function ref.set_referrer_active(p_id uuid, p_active boolean)
+returns void language plpgsql security definer set search_path = ''
+as $$
+begin
+  perform ref.require_role('admin');
+  update ref.referrers set active = p_active where id = p_id;
+  perform ref.audit(case when p_active then 'referrer.activate' else 'referrer.deactivate' end, 'referrer', p_id::text);
+end $$;
+
+revoke execute on function ref.clean_username(text), ref.signup_available(text, text), ref.register_me(text, text),
+  ref.update_my_profile(text, text), ref.set_referrer_active(uuid, boolean) from public;
+grant execute on function ref.clean_username(text), ref.register_me(text, text), ref.update_my_profile(text, text),
+  ref.set_referrer_active(uuid, boolean), ref.signup_available(text, text) to authenticated;
+-- The sign-up form runs before login: anon may call only this one check. No table is readable by anon.
+grant usage on schema ref to anon;
+grant execute on function ref.signup_available(text, text) to anon;

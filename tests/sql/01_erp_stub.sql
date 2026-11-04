@@ -22,3 +22,6 @@ create policy members_read on erp.accounts for select to authenticated
 grant usage on schema erp to authenticated;
 grant select on all tables in schema erp to authenticated;
 grant execute on all functions in schema erp to authenticated;
+-- like the real ERP: you only see your own profile (owners/admins see all)
+alter table erp.profiles enable row level security;
+create policy profiles_select on erp.profiles for select to authenticated using (user_id = auth.uid());

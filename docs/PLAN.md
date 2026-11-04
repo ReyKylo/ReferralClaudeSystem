@@ -30,7 +30,26 @@ dibuka, setelah menyimpan, atau saat tombol muat ulang ditekan (TanStack Query, 
 |---|---|---|
 | Admin | `erp.profiles.role` = `owner` atau `admin` | Semua. Review, jadwal, target, komisi, pencairan, laporan, audit log |
 | Operations Team | `erp.profiles.role` = `staff` | Melihat peserta yang ada di jadwal beserta kontaknya, konfirmasi H-1, catatan, menandai selesai |
-| Referral | Baris di `ref.referrers` yang terhubung ke login | Hanya data miliknya: daftar peserta, status, jadwal, wallet, pencairan, notifikasi |
+| Referral | Baris di `ref.referrers` yang terhubung ke login. **Siapa pun bisa daftar sendiri** di portal (bagian 2b) | Hanya data miliknya: daftar peserta, status, jadwal, wallet, pencairan, notifikasi |
+
+### 2b. Daftar dan masuk (referral)
+
+Keputusan owner: daftar harus gampang. Siapa pun bisa, tanpa email dan tanpa verifikasi.
+
+| Layar | Isi |
+|---|---|
+| Daftar | **Username**, **Nomor WhatsApp**, **Password** (minimal 6). Tombol "Daftar & masuk", setelah itu langsung masuk ke portal |
+| Masuk | Username + password |
+| Lupa password | Chat admin lewat WhatsApp; admin membuatkan password baru |
+
+Cara kerjanya (`supabase/migrations/20261104130000_ref_self_signup.sql`):
+1. Supabase Auth butuh email, jadi portal membuat alamat login dari username: `<username>@referral.tampilresmi.com`.
+   Alamat ini tidak pernah menerima email dan tidak terlihat oleh pengguna.
+2. "Confirm email" dimatikan, sehingga `signUp()` langsung membuat sesi login.
+3. Portal memanggil `ref.register_me(username, nomor)`, yang menjadikan login itu referral aktif.
+   Username dan nomor WA harus unik, dan login tim ERP ditolak.
+4. Saat mengetik, form mengecek username dan nomor lewat `ref.signup_available()`. Hanya fungsi ini yang bisa dipanggil sebelum login.
+5. Admin mendapat notifikasi "referral baru" dan bisa menonaktifkan referral (`ref.set_referrer_active`).
 
 - Referral **tidak pernah** punya baris di `erp.profiles`, sehingga RLS ERP tetap menyembunyikan semua data ERP dari mereka (sudah dites).
 - Setiap tulis lewat fungsi SQL `security definer` yang memeriksa peran. Tabel hanya punya policy baca, jadi status, jadwal,
@@ -100,7 +119,8 @@ di waktu yang bertabrakan.
 **Fungsi (RPC):** `submit_participant`, `update_my_participant`, `review_participants`, `add_ops_note`, `set_day_target`,
 `schedule_participants`, `unschedule`, `set_confirmation`, `complete_entry`, `set_commission_amount`, `verify_commissions`,
 `update_my_payout`, `request_withdrawal`, `cancel_my_withdrawal`, `decide_withdrawal`, `mark_withdrawal_paid`,
-`link_erp_account`, `create_referrer`, `mark_notifications_read`.
+`link_erp_account`, `create_referrer`, `mark_notifications_read`, serta untuk daftar sendiri: `signup_available`, `register_me`,
+`update_my_profile`, `set_referrer_active`.
 **Baca ringkas:** `calendar(from, to)`, `app_counts()`, `referrer_performance(from, to)`, `ops_performance(from, to, bucket)`,
 serta view `participant_overview`, `entry_overview`, `wallets`, `commission_items`.
 
@@ -118,15 +138,17 @@ Status hari: Planned, Incomplete, Not Planned, Off (target 0).
 
 1. Jalankan `supabase/migrations/20261104120000_ref_init.sql` di project `vfttmslrjimbndseqqko` (lewat MCP `apply_migration` atau SQL Editor).
    Migrasi ini otomatis menambahkan `ref` ke Exposed schemas.
-2. Untuk setiap referral, undang loginnya (Authentication → Users), lalu jalankan `supabase/create-referrer.sql`.
-   Nanti ini bisa dilakukan dari layar ERP.
-3. Cek Advisors (security + performance) di Supabase.
+2. Jalankan juga `supabase/migrations/20261104130000_ref_self_signup.sql`.
+3. Supabase → Authentication → Sign In / Providers → Email: **Allow new users to sign up = ON** dan **Confirm email = OFF**.
+   Referral lalu daftar sendiri di portal. `supabase/create-referrer.sql` tetap ada untuk admin yang ingin membuatkan akun.
+4. Cek Advisors (security + performance) di Supabase.
 
 ### Tes
 
 `tests/sql/run.sh` membangun database sementara, menjalankan migrasi, lalu mengikuti satu alur penuh sebagai empat user nyata
 (owner, staff, dua referral) dengan RLS aktif: daftar, duplikat, isolasi data, review, target, pindah jadwal, H-1, selesai,
-komisi, pencairan, laporan, dan notifikasi. Jalan di CI (`.github/workflows/ci.yml`) memakai stub kecil skema ERP.
+komisi, pencairan, laporan, dan notifikasi. `20_signup.sql` menguji daftar sendiri (username/nomor ganda, login ERP ditolak,
+referral baru tidak melihat data siapa pun, referral yang dinonaktifkan kehilangan akses). Jalan di CI (`.github/workflows/ci.yml`) memakai stub kecil skema ERP.
 Di lokal, `ERP_DIR=../ERPClaudeKita tests/sql/run.sh` menjalankannya di atas migrasi ERP yang asli.
 
 ## 5. Layar
@@ -193,7 +215,7 @@ Database sudah mencakup fase 1 sampai 4, jadi fase berikutnya hanya membangun la
 | Q3 | **Hubungan dengan Rekap.** Rekap ERP sudah memotong "referral Gipong/Zakar" dari bagi hasil harian. Kalau wallet juga membayar mereka, bisa terbayar dua kali. Mana yang jadi sumber pembayaran? | Setelah portal jalan, referral dibayar lewat wallet, dan baris referral di Rekap diisi dari komisi yang di-approve hari itu |
 | Q4 | "Completed" artinya apa persisnya? Apakah harus sudah jadi akun di ERP (Akun)? | Ops/admin menandai selesai; link ke akun ERP opsional |
 | Q5 | Alamat portal | `referral.tampilresmi.com` (Cloudflare Workers, sama seperti ERP) |
-| Q6 | Siapa yang membuat login referral? | Admin (sign-up publik tetap mati) |
+| Q6 | ~~Siapa yang membuat login referral?~~ **Diputuskan:** siapa pun bisa daftar sendiri (username + nomor + password, tanpa verifikasi) | Bagian 2b |
 | Q7 | Notifikasi cukup di dalam aplikasi, atau perlu WA/email otomatis? | Di dalam aplikasi dulu (lonceng + badge) |
 | Q8 | Tim operasional = user ERP role `staff`? | Ya |
 
@@ -203,4 +225,11 @@ Database sudah mencakup fase 1 sampai 4, jadi fase berikutnya hanya membangun la
 - Data di Supabase terenkripsi saat disimpan. Nomor rekening pencairan disimpan biasa di balik RLS (hanya pemiliknya dan admin).
 - Backup: paket gratis Supabase tidak punya backup otomatis harian yang bisa di-restore sendiri. Untuk data uang, pertimbangkan
   paket Pro (backup harian) atau ekspor terjadwal.
+- **Daftar terbuka.** Karena sign-up dinyalakan untuk seluruh project Supabase, siapa pun bisa membuat login. Login seperti itu
+  tidak melihat data ERP apa pun (tidak punya `erp.profiles`, sudah dites) dan hanya melihat data referralnya sendiri. Peserta
+  yang didaftarkan tetap harus disetujui admin, dan uang baru bisa dicairkan dari komisi yang sudah diverifikasi.
+  Jadi risiko terbesar adalah spam pendaftaran. Kalau itu terjadi, nyalakan CAPTCHA (Cloudflare Turnstile, gratis, biasanya tanpa
+  klik) di Authentication → Attack Protection.
+- Tanpa email, "lupa password" tidak bisa dilakukan sendiri. Admin mengganti password di Authentication → Users. Nanti ini bisa
+  dibuat sebagai tombol di ERP lewat fungsi server.
 - Sesi login memakai Supabase Auth (cookie, refresh token). Batas waktu sesi bisa diatur di Authentication → Sessions (paket Pro).
