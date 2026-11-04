@@ -35,6 +35,22 @@ as $$
   )
 $$;
 
+-- Log in with the username OR the WhatsApp number (people remember their number). Returns the login address to pass
+-- to signInWithPassword(), or null when nothing matches. Callable before login; it reveals only the username behind a
+-- number that already has an account, which the sign-up check reveals anyway.
+create or replace function ref.login_email(p_identifier text)
+returns text language sql stable security definer set search_path = ''
+as $$
+  -- self-made accounts: <username>@<domain>; accounts an admin made: the email they were invited with
+  select coalesce(r.username || '@' || (select value #>> '{}' from ref.settings where key = 'login_email_domain'),
+                  (select u.email from auth.users u where u.id = r.user_id))
+  from ref.referrers r
+  where r.active and r.user_id is not null
+    and (r.username = ref.clean_username(p_identifier)::extensions.citext
+         or (length(coalesce(erp.normalize_wa(p_identifier), '')) >= 10 and r.wa_norm = erp.normalize_wa(p_identifier)))
+  limit 1
+$$;
+
 -- Called once right after signUp(). Makes the logged-in user a referral.
 create or replace function ref.register_me(p_username text, p_wa text)
 returns uuid language plpgsql security definer set search_path = ''
@@ -95,10 +111,10 @@ begin
   perform ref.audit(case when p_active then 'referrer.activate' else 'referrer.deactivate' end, 'referrer', p_id::text);
 end $$;
 
-revoke execute on function ref.clean_username(text), ref.signup_available(text, text), ref.register_me(text, text),
+revoke execute on function ref.clean_username(text), ref.signup_available(text, text), ref.login_email(text), ref.register_me(text, text),
   ref.update_my_profile(text, text), ref.set_referrer_active(uuid, boolean) from public;
 grant execute on function ref.clean_username(text), ref.register_me(text, text), ref.update_my_profile(text, text),
-  ref.set_referrer_active(uuid, boolean), ref.signup_available(text, text) to authenticated;
--- The sign-up form runs before login: anon may call only this one check. No table is readable by anon.
+  ref.set_referrer_active(uuid, boolean), ref.signup_available(text, text), ref.login_email(text) to authenticated;
+-- The sign-up and log-in forms run before login: anon may call only these two. No table is readable by anon.
 grant usage on schema ref to anon;
-grant execute on function ref.signup_available(text, text) to anon;
+grant execute on function ref.signup_available(text, text), ref.login_email(text) to anon;

@@ -60,4 +60,13 @@ select set_config('request.jwt.claim.sub', :'u2', false); set role authenticated
 select t.eq(ref.my_role(), null::text, 'switched-off referral loses access');
 reset role;
 
+-- log in with username or number (before login, as anon)
+set role anon;
+select t.eq(ref.login_email('Budi_Ref'), 'budi_ref@referral.tampilresmi.com', 'login by username');
+select t.eq(ref.login_email('+62 857-1234-5678'), 'budi_ref@referral.tampilresmi.com', 'login by WhatsApp number, any format');
+select t.eq(ref.login_email('tidak_ada'), null::text, 'unknown username');
+select t.eq(ref.login_email('sari.ref'), null::text, 'switched-off referral cannot log in through the lookup');
+select t.eq(ref.login_email('0812-1111-1111'), 'gipong@x.id', 'admin-made referral logs in by number with their invite email');
+reset role;
+
 \echo 'signup: ok'
