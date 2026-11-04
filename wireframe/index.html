@@ -118,7 +118,7 @@ a { color: var(--link); }
 .btn-2 { background: var(--btn-2-bg); color: var(--btn-2-fg); }
 .btn-3 { background: var(--surface); color: var(--text); border-color: var(--line-strong); }
 .btn-3:hover { border-color: var(--text-3); }
-.btn-link { background: none; border: 0; color: var(--link); padding: 0 var(--s1); min-height: 44px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: var(--s1); }
+.btn-link { background: none; border: 0; color: var(--link); padding: 0 var(--s1); min-height: var(--tap); font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: var(--s1); }
 .btn-sm { min-height: 40px; padding: 0 var(--s3); font-size: var(--t-meta); }
 .btn-block { width: 100%; min-height: var(--tap); }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
@@ -293,7 +293,7 @@ button.row:hover, a.row:hover { background: var(--surface-2); }
   .topbar select { background: rgba(255,255,255,.08); color: var(--nav-fg); border: 1px solid rgba(255,255,255,.2); border-radius: var(--r); padding: 0 var(--s2); min-height: 40px; max-width: 56%; font-size: var(--t-meta); }
   .topbar select option { color: #0B1F24; background: #fff; }
   .topchips { display: flex; gap: var(--s2); overflow-x: auto; scrollbar-width: none; margin-right: calc(-1 * max(var(--s4), env(safe-area-inset-right, 0px))); padding-right: var(--s4); }
-  .topchips button { flex: none; border: 1px solid rgba(255,255,255,.2); background: none; color: var(--nav-fg-2); border-radius: var(--r); min-height: 40px; padding: 0 var(--s3); font-weight: 600; font-size: var(--t-meta); }
+  .topchips button { flex: none; border: 1px solid rgba(255,255,255,.2); background: none; color: var(--nav-fg-2); border-radius: var(--r); min-height: var(--tap); padding: 0 var(--s3); font-weight: 600; font-size: var(--t-meta); }
   .topchips button[aria-current="page"] { background: var(--orange); border-color: var(--orange); color: var(--asphalt); }
   .topchips .count { margin-left: var(--s1); }
   .tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; background: var(--surface); border-top: 1px solid var(--line-soft);
@@ -613,7 +613,7 @@ const refNo = (w) => 'TS-' + w.id.slice(1).padStart(4, '0');
 // What a referral sees: four steps on a paving road, and one plain sentence.
 const STEPS = ['Terkirim', 'Dicek', 'Dijadwalkan', 'Selesai'];
 const REFST = {
-  submitted: { label: 'Sedang dicek', tone: 'warn', now: 1 }, under_review: { label: 'Sedang dicek', tone: 'warn', now: 1 },
+  submitted: { label: 'Terkirim', tone: 'neu', now: 1 }, under_review: { label: 'Sedang dicek', tone: 'warn', now: 1 },
   approved: { label: 'Diterima', tone: 'ok', now: 2 }, waiting_schedule: { label: 'Menunggu jadwal baru', tone: 'warn', now: 2 },
   scheduled: { label: 'Dijadwalkan', tone: 'ok', now: 2 }, confirmation_pending: { label: 'Dijadwalkan', tone: 'ok', now: 2 },
   confirmed: { label: 'Siap hadir', tone: 'ok', now: 2 }, completed: { label: 'Selesai', tone: 'ok', now: 4 }, rejected: { label: 'Ditolak', tone: 'bad', now: 1 },
@@ -623,7 +623,7 @@ function refLine(p) {
   const e = activeEntry(p.id), when = e ? `${fmtDL(e.day)} jam ${fmtT(e.time)}` : '';
   const c = C.find((x) => x.pid === p.id && x.status !== 'void');
   return {
-    submitted: 'Terkirim. Tim akan mengecek datanya.',
+    submitted: 'Terkirim, menunggu dicek tim.',
     under_review: 'Tim sedang mengecek datanya.',
     approved: 'Diterima. Tim sedang mencarikan jadwal.',
     waiting_schedule: 'Peserta tidak bisa di jadwal sebelumnya. Tim akan mencarikan jadwal baru.',
@@ -1227,9 +1227,9 @@ document.addEventListener('change', (ev) => {
   if (t.id === 'f-consent' && st.regErr['f-consent']) { st.regDraft = readReg(); delete st.regErr['f-consent']; render(); }
   if (t.dataset.moveto && t.value) { const pid = t.dataset.moveto, day = t.value; run(() => schedule(day, [pid], null, false), `Dipindah ke ${fmtDL(day)}`); }
 });
-document.addEventListener('submit', (ev) => {
-  ev.preventDefault();
-  const id = ev.target.id;
+document.addEventListener('submit', (evt) => {
+  evt.preventDefault();
+  const id = evt.target.id;
   if (id === 'authForm') {
     try {
       const r = st.authTab === 'daftar' ? signUp(st.aUser, st.aWa, document.getElementById('a-pw').value) : signIn(document.getElementById('a-id').value, document.getElementById('a-pw').value);
@@ -1237,7 +1237,7 @@ document.addEventListener('submit', (ev) => {
       ME = r.id; Object.assign(st, { aUser: '', aWa: '', aId: '', aPw: '', chk: {}, authErr: {}, showPw: false, forgot: false });
       setRole('referral');
       toast(wasNew ? `Akun ${r.username} sudah jadi. Anda sudah masuk.` : `Anda masuk sebagai ${r.name}.`);
-    } catch (e) { if (e.fields) { st.authErr = e.fields; st.aPw = document.getElementById('a-pw').value; render(); focusFirstError() || document.getElementById(st.authTab === 'daftar' ? 'a-user' : 'a-id').focus(); } else toast(e.message, true); }
+    } catch (e) { if (e.fields) { st.authErr = e.fields; st.aPw = document.getElementById('a-pw').value; render(); focusFirstError() || document.getElementById(st.authTab === 'daftar' ? 'a-user' : 'a-id').focus(); } else { console.error(e); toast('Belum berhasil. Coba lagi sebentar lagi.', true); } }
     return;
   }
   if (id === 'regForm') {
@@ -1247,8 +1247,8 @@ document.addEventListener('submit', (ev) => {
     if (!f.email.trim()) err['f-email'] = 'Isi email peserta.'; else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim())) err['f-email'] = 'Email belum benar. Contoh: nama@gmail.com.';
     if (!f.consent) err['f-consent'] = 'Centang dulu kalau peserta sudah setuju dihubungi.';
     if (!Object.keys(err).length) {
-      try { const p = submitParticipant(ME, { ...f, availTime: st.regTime, consent: true }); if (st.fixOf) { const old = pById(st.fixOf); if (old) { old.replacedBy = p.id; ev(p, TODAY, `Kiriman ulang dari data yang ditolak ${fmtD(old.enteredOn)}`); } st.fixOf = null; } st.regDraft = {}; st.regErr = {}; st.regTime = ''; clearDraft(); busy(ev.submitter || ev.target.querySelector('[type=submit]'), 'Mengirim…', () => { st.justSent = p.id; render(); window.scrollTo(0, 0); }); return; }
-      catch (e) { if (/WhatsApp/.test(e.message)) err['f-wa'] = 'Nomor ini sudah didaftarkan sebelumnya, oleh Anda atau referral lain.'; else if (/Email/.test(e.message)) err['f-email'] = 'Email ini sudah didaftarkan sebelumnya, oleh Anda atau referral lain.'; else err['f-name'] = e.message; }
+      try { const p = submitParticipant(ME, { ...f, availTime: st.regTime, consent: true }); if (st.fixOf) { const old = pById(st.fixOf); if (old) { old.replacedBy = p.id; ev(p, TODAY, `Kiriman ulang dari data yang ditolak ${fmtD(old.enteredOn)}`); } st.fixOf = null; } st.regDraft = {}; st.regErr = {}; st.regTime = ''; clearDraft(); busy(evt.submitter || evt.target.querySelector('[type=submit]'), 'Mengirim…', () => { st.justSent = p.id; render(); window.scrollTo(0, 0); }); return; }
+      catch (e) { if (/WhatsApp/.test(e.message)) err['f-wa'] = 'Nomor ini sudah didaftarkan sebelumnya, oleh Anda atau referral lain.'; else if (/Email/.test(e.message)) err['f-email'] = 'Email ini sudah didaftarkan sebelumnya, oleh Anda atau referral lain.'; else { console.error(e); toast('Pendaftaran belum terkirim. Coba lagi sebentar lagi.', true); } }
     }
     st.regDraft = f; st.regErr = err; render(); focusFirstError();
     return;
