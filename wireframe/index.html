@@ -11,7 +11,7 @@
 :root {
   --asphalt: #0B1F24; --orange: #FF5B1F; --mint: #4FE0C0; --teal: #14564F;
   --bg: #EFF1F0; --surface: #FFFFFF; --surface-2: #F5F6F5; --text: #0B1F24; --text-2: #46575B; --text-3: #5C6B6E;
-  --line: #C3CAC8; --line-soft: #DDE2E0; --pattern: rgba(11, 31, 36, 0.045);
+  --line: #C3CAC8; --line-soft: #DDE2E0; --line-strong: #7E8C8F; --pattern: rgba(11, 31, 36, 0.045);
   --nav-bg: #0B1F24; --nav-fg: #FFFFFF; --nav-fg-2: #A9BDBD; --nav-hover: rgba(255, 255, 255, 0.07);
   --accent: #FF5B1F; --on-accent: #0B1F24; --link: #B8400E;
   --btn-2-bg: #0B1F24; --btn-2-fg: #FFFFFF; --head-bg: #0B1F24; --head-fg: #FFFFFF;
@@ -33,7 +33,7 @@
   :root:not([data-theme="light"]) {
     color-scheme: dark;
     --bg: #0B1F24; --surface: #112B31; --surface-2: #15333A; --text: #FFFFFF; --text-2: #B9CACA; --text-3: #9AAFAF;
-    --line: rgba(255, 255, 255, 0.22); --line-soft: rgba(255, 255, 255, 0.1); --pattern: rgba(255, 255, 255, 0.025);
+    --line: rgba(255, 255, 255, 0.22); --line-soft: rgba(255, 255, 255, 0.1); --line-strong: rgba(255, 255, 255, 0.45); --pattern: rgba(255, 255, 255, 0.025);
     --nav-bg: #061418; --nav-fg-2: #9AAFAF; --link: #FF8A57;
     --btn-2-bg: #FFFFFF; --btn-2-fg: #0B1F24; --head-bg: #14564F; --done: #FFFFFF; --todo: rgba(255, 255, 255, 0.14);
     --ok-bg: rgba(79, 224, 192, 0.14); --ok-fg: #4FE0C0; --ok-dot: #4FE0C0;
@@ -47,7 +47,7 @@
 :root[data-theme="dark"] {
   color-scheme: dark;
   --bg: #0B1F24; --surface: #112B31; --surface-2: #15333A; --text: #FFFFFF; --text-2: #B9CACA; --text-3: #9AAFAF;
-  --line: rgba(255, 255, 255, 0.22); --line-soft: rgba(255, 255, 255, 0.1); --pattern: rgba(255, 255, 255, 0.025);
+  --line: rgba(255, 255, 255, 0.22); --line-soft: rgba(255, 255, 255, 0.1); --line-strong: rgba(255, 255, 255, 0.45); --pattern: rgba(255, 255, 255, 0.025);
   --nav-bg: #061418; --nav-fg-2: #9AAFAF; --link: #FF8A57;
   --btn-2-bg: #FFFFFF; --btn-2-fg: #0B1F24; --head-bg: #14564F; --done: #FFFFFF; --todo: rgba(255, 255, 255, 0.14);
   --ok-bg: rgba(79, 224, 192, 0.14); --ok-fg: #4FE0C0; --ok-dot: #4FE0C0;
@@ -116,7 +116,7 @@ a { color: var(--link); }
 .btn-1 { background: var(--accent); color: var(--on-accent); }
 .btn-1:hover { background: #FF6D36; }
 .btn-2 { background: var(--btn-2-bg); color: var(--btn-2-fg); }
-.btn-3 { background: var(--surface); color: var(--text); border-color: var(--line); }
+.btn-3 { background: var(--surface); color: var(--text); border-color: var(--line-strong); }
 .btn-3:hover { border-color: var(--text-3); }
 .btn-link { background: none; border: 0; color: var(--link); padding: 0 var(--s1); min-height: 44px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: var(--s1); }
 .btn-sm { min-height: 40px; padding: 0 var(--s3); font-size: var(--t-meta); }
@@ -128,22 +128,23 @@ a { color: var(--link); }
 .field .opt { font-weight: 400; color: var(--text-2); }
 .help { font-size: var(--t-meta); color: var(--text-2); }
 .help.ok { color: var(--ok-fg); } .help.bad { color: var(--bad-fg); }
-.input, select.input, textarea.input { width: 100%; min-height: var(--tap); padding: var(--s3); border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); font-size: var(--t-body); }
+.input, select.input, textarea.input { width: 100%; min-height: var(--tap); padding: var(--s3); border: 1px solid var(--line-strong); border-radius: var(--r); background: var(--surface); font-size: var(--t-body); }
 textarea.input { min-height: 88px; resize: vertical; }
 .input:focus { outline: 2px solid var(--focus); outline-offset: -1px; border-color: transparent; }
-.input[aria-invalid="true"] { border-color: var(--bad-dot); }
+.input[aria-invalid="true"] { border: 2px solid var(--bad-dot); }
+.input[aria-invalid="true"]:focus { outline-color: var(--bad-dot); }
 .pw { display: flex; gap: var(--s2); }
-.check { display: flex; gap: var(--s3); align-items: flex-start; font-size: var(--t-body); padding: var(--s3); border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); cursor: pointer; }
+.check { display: flex; gap: var(--s3); align-items: flex-start; font-size: var(--t-body); padding: var(--s3); border: 1px solid var(--line-strong); border-radius: var(--r); background: var(--surface); cursor: pointer; }
 .check input { margin-top: var(--s1); accent-color: var(--orange); width: 20px; height: 20px; flex: none; }
-.check[aria-invalid="true"] { border-color: var(--bad-dot); }
+.check[aria-invalid="true"] { border: 2px solid var(--bad-dot); }
 .seg { display: inline-flex; flex-wrap: wrap; gap: var(--s1); }
 .seg button { border: 1px dashed var(--line); background: var(--surface); min-height: 40px; padding: 0 var(--s3); border-radius: var(--r); font-size: var(--t-meta); font-weight: 600; cursor: pointer; color: var(--text-2); }
 .seg button[aria-pressed="true"] { border-style: solid; border-color: var(--btn-2-bg); background: var(--btn-2-bg); color: var(--btn-2-fg); }
 .seg.full { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); }
 .seg.full button { min-height: 44px; font-size: var(--t-body); }
 .chips { display: flex; flex-wrap: wrap; gap: var(--s2); }
-.chip { border: 1px solid var(--line); background: var(--surface); min-height: 44px; padding: 0 var(--s4); border-radius: var(--r); font-weight: 600; cursor: pointer; font-variant-numeric: tabular-nums; }
-.chip[aria-pressed="true"] { border-color: var(--orange); background: var(--orange); color: var(--on-accent); }
+.chip { border: 1px solid var(--line-strong); background: var(--surface); min-height: 44px; padding: 0 var(--s4); border-radius: var(--r); font-weight: 600; cursor: pointer; font-variant-numeric: tabular-nums; }
+.chip[aria-pressed="true"] { border-color: var(--btn-2-bg); background: var(--btn-2-bg); color: var(--btn-2-fg); }
 .chip:disabled { opacity: .4; cursor: not-allowed; }
 .chip small { font-weight: 400; color: inherit; opacity: .8; margin-left: var(--s1); font-size: var(--t-meta); }
 details.more { border: 1px dashed var(--line); border-radius: var(--r); }
@@ -164,8 +165,12 @@ details.more > div { padding: 0 var(--s3) var(--s3); display: grid; gap: var(--s
 .b-warn { background: var(--warn-bg); color: var(--warn-fg); } .b-warn::before { background: var(--warn-dot); }
 .b-bad { background: var(--bad-bg); color: var(--bad-fg); } .b-bad::before { background: var(--bad-dot); }
 .b-neu { background: var(--neu-bg); color: var(--neu-fg); } .b-neu::before { background: var(--neu-dot); }
-.note { background: var(--tint); border-radius: var(--r); padding: var(--s3) var(--s4); font-size: var(--t-meta); display: flex; gap: var(--s3); align-items: flex-start; }
-.note .ico { margin-top: 2px; color: var(--warn-fg); }
+.note { background: var(--surface-2); border: 1px solid var(--line-soft); border-radius: var(--r); padding: var(--s3) var(--s4); font-size: var(--t-meta); }
+.note.ic { display: flex; gap: var(--s3); align-items: flex-start; }
+.note .ico { margin-top: 2px; color: var(--text-2); }
+.note.err { background: var(--bad-bg); border-color: transparent; color: var(--bad-fg); }
+.note.err .ico { color: var(--bad-fg); }
+.offline { background: var(--asphalt); color: #fff; border-radius: var(--r); padding: var(--s3) var(--s4); font-size: var(--t-meta); }
 .grid { display: grid; gap: var(--s4); }
 .cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .split { display: grid; gap: var(--s5); grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr); align-items: start; }
@@ -181,10 +186,8 @@ details.more > div { padding: 0 var(--s3) var(--s3); display: grid; gap: var(--s
 /* KPI tiles (ERP) */
 .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: var(--s3); }
 .kpi { background: var(--surface); border: 1px solid var(--line-soft); border-radius: var(--r); padding: var(--s4); display: grid; gap: var(--s1); position: relative; overflow: hidden; }
-.kpi .v { font-size: var(--t-hero); line-height: 1.1; font-weight: 700; font-variant-numeric: tabular-nums; }
+.kpi .v { font-size: var(--t-hero); line-height: 1.1; font-weight: 600; font-variant-numeric: tabular-nums; }
 .kpi .s { font-size: var(--t-meta); color: var(--text-2); }
-.kpi.hi::after { content: ""; position: absolute; top: 0; right: 0; width: 32px; height: 8px; background: var(--orange); }
-.kpi.okk::after { content: ""; position: absolute; top: 0; right: 0; width: 32px; height: 8px; background: var(--mint); }
 .progress { display: grid; gap: var(--s2); }
 .bar { height: 16px; background: var(--surface-2); border: 1px solid var(--line-soft); border-radius: var(--r-in); display: flex; overflow: hidden; }
 .bar > span { display: block; height: 100%; }
@@ -259,6 +262,7 @@ button.row:hover, a.row:hover { background: var(--surface-2); }
   padding: max(var(--s5), env(safe-area-inset-top, 0px)) max(var(--s5), env(safe-area-inset-right, 0px)) max(var(--s6), env(safe-area-inset-bottom, 0px)) var(--s5); display: grid; gap: var(--s4); align-content: start; }
 .drawer-head { display: flex; justify-content: space-between; gap: var(--s3); align-items: flex-start; }
 .kv { display: grid; grid-template-columns: 128px minmax(0, 1fr); gap: var(--s3); font-size: var(--t-body); }
+.kv > span:last-child { overflow-wrap: anywhere; }
 .kv > span:first-child { color: var(--text-2); font-size: var(--t-meta); padding-top: 2px; }
 .timeline { display: grid; }
 .timeline div { display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: var(--s3); padding: var(--s2) 0; border-bottom: 1px dashed var(--line); font-size: var(--t-meta); }
@@ -268,11 +272,13 @@ button.row:hover, a.row:hover { background: var(--surface-2); }
   background: var(--asphalt); color: #fff; border-radius: var(--r); padding: var(--s3) var(--s4); font-weight: 600; font-size: var(--t-meta); display: flex; gap: var(--s3); align-items: center; max-width: calc(100% - 32px); box-shadow: 0 8px 24px rgba(0,0,0,.25); }
 .toast::before { content: ""; width: 12px; height: 8px; border-radius: var(--r-in); background: var(--mint); flex: none; }
 .toast.err::before { background: var(--orange); }
-.toast button { background: none; border: 1px solid rgba(255,255,255,.4); color: #fff; border-radius: var(--r-in); min-height: 36px; padding: 0 var(--s3); font-weight: 600; cursor: pointer; }
+.toast button { background: none; border: 1px solid rgba(255,255,255,.4); color: #fff; border-radius: var(--r-in); min-height: 44px; padding: 0 var(--s3); font-weight: 600; cursor: pointer; }
 .proto { font-size: var(--t-meta); color: var(--text-2); }
 .proto b { font-weight: 600; }
 
 .prow { display: grid; gap: var(--s2); min-width: 0; }
+.line-t { font-size: var(--t-body); color: var(--text); }
+[data-flat] .kpi { border: 0; background: none; padding: 0; }
 .prow-top { display: flex; justify-content: space-between; gap: var(--s3); align-items: center; flex-wrap: wrap; }
 
 /* ---- phone */
@@ -310,7 +316,7 @@ button.row:hover, a.row:hover { background: var(--surface-2); }
   .h1-row { grid-template-columns: minmax(0, 1fr); }
   .h1-actions { justify-items: start; } .h1-actions .line { justify-content: flex-start; }
   .btn { min-height: var(--tap); }
-  .btn-sm { min-height: 44px; }
+  .btn-sm, .chip, .seg button, .seg.full button { min-height: var(--tap); }
   .card-pad { padding: var(--s4); }
   .row { padding: var(--s3) var(--s4); }
   .card-head { padding: var(--s3) var(--s4); }
@@ -333,6 +339,8 @@ button.row:hover, a.row:hover { background: var(--surface-2); }
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
   <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-chev-l" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="i-wifi-off" viewBox="0 0 24 24"><path d="M12 20h.01"/><path d="M8.5 16.43a5 5 0 0 1 7 0"/><path d="M2 8.82a15 15 0 0 1 4.17-2.65"/><path d="M10.66 5c4.01-.36 8.14.9 11.34 3.76"/><path d="M16.85 11.25a10 10 0 0 1 2.22 1.68"/><path d="M5 12.86a10 10 0 0 1 5.17-2.69"/><path d="m2 2 20 20"/></symbol>
   <symbol id="i-chat" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></symbol>
   <symbol id="i-cal" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></symbol>
   <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></symbol>
@@ -362,13 +370,13 @@ button.row:hover, a.row:hover { background: var(--surface-2); }
     <div class="side-foot"><b>Wireframe.</b> Data contoh, tidak tersimpan. Aturan hitungnya sama dengan database.</div>
   </aside>
 
-  <main class="main">
-    <div class="topbar">
+  <div class="topbar">
       <div class="t1"><svg fill="currentColor" class="logo" aria-label="codepave" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 366 64"><g transform="translate(0,0) scale(1.0)"><path d="M16,0H27.5A2.5,2.5 0 0 1 30.0,2.5V13.5A2.5,2.5 0 0 1 27.5,16H2.5A2.5,2.5 0 0 1 0,13.5V16A16,16 0 0 1 16,0Z"/><path d="M36.5,0H61.5A2.5,2.5 0 0 1 64.0,2.5V13.5A2.5,2.5 0 0 1 61.5,16H36.5A2.5,2.5 0 0 1 34.0,13.5V2.5A2.5,2.5 0 0 1 36.5,0Z"/><path d="M2.5,20H13.5A2.5,2.5 0 0 1 16,22.5V41.5A2.5,2.5 0 0 1 13.5,44H2.5A2.5,2.5 0 0 1 0,41.5V22.5A2.5,2.5 0 0 1 2.5,20Z"/><path d="M2.5,48H27.5A2.5,2.5 0 0 1 30.0,50.5V61.5A2.5,2.5 0 0 1 27.5,64H16A16,16 0 0 1 0,48V50.5A2.5,2.5 0 0 1 2.5,48Z"/><path fill="#FF5B1F" d="M36.5,48H61.5A2.5,2.5 0 0 1 64.0,50.5V61.5A2.5,2.5 0 0 1 61.5,64H36.5A2.5,2.5 0 0 1 34.0,61.5V50.5A2.5,2.5 0 0 1 36.5,48Z"/></g><path d="M103.732 47.744Q99.237 47.744 95.9665 45.729Q92.696 43.714 90.9135 39.994Q89.131 36.274 89.131 31.189999999999998Q89.131 26.106 90.929 22.3705Q92.727 18.635 96.013 16.6045Q99.299 14.573999999999998 103.763 14.573999999999998Q108.94 14.573999999999998 112.35 16.991999999999997Q115.75999999999999 19.41 117.31 24.122L109.188 26.85Q108.444 24.866 107.06450000000001 23.7965Q105.685 22.727 103.887 22.727Q101.159 22.727 99.46950000000001 25.052Q97.78 27.377 97.78 31.189999999999998Q97.78 34.972 99.423 37.2815Q101.066 39.591 103.732 39.591Q105.71600000000001 39.591 107.111 38.4285Q108.506 37.266 109.25 35.034L117.34100000000001 37.39Q115.85300000000001 42.567 112.412 45.1555Q108.971 47.744 103.732 47.744ZM137.511 47.744Q130.75300000000001 47.744 126.84700000000001 43.326499999999996Q122.941 38.909 122.941 31.189999999999998Q122.941 26.106 124.7235 22.3705Q126.506 18.635 129.7765 16.6045Q133.047 14.573999999999998 137.511 14.573999999999998Q141.94400000000002 14.573999999999998 145.1835 16.6045Q148.423 18.635 150.19 22.355Q151.957 26.075 151.957 31.189999999999998Q151.957 36.305 150.221 40.025Q148.485 43.745 145.23000000000002 45.7445Q141.975 47.744 137.511 47.744ZM137.511 39.56Q140.363 39.56 141.92849999999999 37.359Q143.494 35.158 143.494 31.189999999999998Q143.494 27.191 141.89749999999998 24.9745Q140.301 22.758 137.511 22.758Q134.69 22.758 133.078 25.005499999999998Q131.466 27.253 131.466 31.189999999999998Q131.466 35.096000000000004 133.078 37.328Q134.69 39.56 137.511 39.56ZM170.67 47.744Q164.501 47.744 161.06 43.3575Q157.619 38.971000000000004 157.619 31.128Q157.619 26.23 159.2775 22.494500000000002Q160.936 18.759 163.8965 16.6665Q166.857 14.573999999999998 170.763 14.573999999999998Q174.855 14.573999999999998 177.304 17.705000000000002V6.079999999999998L185.829 2.235999999999997V47.0H177.304V44.365Q175.32 47.744 170.67 47.744ZM172.096 39.56Q174.018 39.56 175.2425 39.002Q176.46699999999998 38.444 177.304 37.266V25.145Q176.46699999999998 24.029 175.0565 23.3935Q173.64600000000002 22.758 172.096 22.758Q169.275 22.758 167.7095 24.9125Q166.144 27.067 166.144 31.128Q166.144 33.887 166.82600000000002 35.747Q167.508 37.607 168.841 38.5835Q170.174 39.56 172.096 39.56ZM208.014 47.744Q203.395 47.744 200.04700000000003 45.729Q196.699 43.714 194.901 39.994Q193.103 36.274 193.103 31.128Q193.103 26.044 194.93200000000002 22.323999999999998Q196.761 18.604 200.10899999999998 16.589Q203.457 14.573999999999998 208.014 14.573999999999998Q211.95100000000002 14.573999999999998 215.144 16.2015Q218.33700000000002 17.829 220.21250000000003 21.1615Q222.08800000000002 24.494 222.08800000000002 29.578Q222.08800000000002 30.446 222.05700000000002 31.670499999999997Q222.026 32.894999999999996 221.871 34.104H201.442Q201.50400000000002 36.057 202.32550000000003 37.483000000000004Q203.14700000000002 38.909 204.604 39.6995Q206.061 40.49 208.04500000000002 40.49Q210.401 40.49 212.044 39.730500000000006Q213.687 38.971000000000004 215.20600000000002 37.235L220.104 42.226Q217.965 44.737 214.9735 46.2405Q211.982 47.744 208.014 47.744ZM201.535 27.594H213.904Q213.71800000000002 25.765 212.97400000000002 24.463Q212.23000000000002 23.161 210.94350000000003 22.494500000000002Q209.657 21.828 207.828 21.828Q205.317 21.828 203.5965 23.316Q201.876 24.804 201.535 27.594ZM229.052 59.586V15.318000000000001H237.577V17.55Q239.933 14.573999999999998 244.149 14.573999999999998Q248.24099999999999 14.573999999999998 251.18599999999998 16.5735Q254.131 18.573 255.712 22.293Q257.293 26.013 257.293 31.189999999999998Q257.293 36.15 255.6345 39.870000000000005Q253.976 43.59 251.0 45.667Q248.024 47.744 244.05599999999998 47.744Q241.97899999999998 47.744 240.3515 47.0Q238.724 46.256 237.577 44.83V55.742ZM242.723 39.56Q245.606 39.56 247.17149999999998 37.359Q248.737 35.158 248.737 31.189999999999998Q248.737 27.129 247.187 24.9435Q245.637 22.758 242.723 22.758Q241.049 22.758 239.809 23.3005Q238.569 23.843 237.577 24.99V37.204Q238.135 38.258 239.56099999999998 38.909000000000006Q240.987 39.56 242.723 39.56ZM273.991 47.744Q268.783 47.744 265.745 44.954Q262.707 42.164 262.707 37.421Q262.707 34.321 264.3035 31.996Q265.90000000000003 29.671 268.752 28.3845Q271.604 27.098 275.386 27.098Q277.401 27.098 279.3075 27.439Q281.214 27.78 282.547 28.4V26.509Q282.547 24.153 281.1055 22.9285Q279.664 21.704 276.93600000000004 21.704Q274.611 21.704 272.1465 22.541Q269.682 23.378 267.07800000000003 25.083L264.474 18.48Q267.295 16.589 270.7515 15.581499999999998Q274.208 14.573999999999998 277.773 14.573999999999998Q284.37600000000003 14.573999999999998 287.66200000000003 17.643Q290.94800000000004 20.712 290.94800000000004 26.819V47.0H282.547V44.582Q281.028 46.132 278.84250000000003 46.938Q276.65700000000004 47.744 273.991 47.744ZM276.099 40.614Q277.928 40.614 279.5865 39.962999999999994Q281.245 39.312 282.547 38.072V34.91Q281.307 34.352000000000004 279.819 34.073Q278.331 33.794 276.781 33.794Q274.084 33.794 272.54949999999997 34.7395Q271.015 35.685 271.015 37.39Q271.015 38.909 272.348 39.7615Q273.68100000000004 40.614 276.099 40.614ZM307.646 47.0 296.05199999999996 15.318000000000001H304.918L311.304 33.391Q311.552 34.042 311.769 34.832499999999996Q311.986 35.623 312.17199999999997 36.397999999999996Q312.389 35.623 312.62149999999997 34.848Q312.854 34.073 313.07099999999997 33.391L319.426 15.318000000000001H328.292L316.698 47.0ZM347.37700000000007 47.744Q342.75800000000004 47.744 339.41 45.729Q336.062 43.714 334.264 39.994Q332.466 36.274 332.466 31.128Q332.466 26.044 334.295 22.323999999999998Q336.124 18.604 339.47200000000004 16.589Q342.82000000000005 14.573999999999998 347.37700000000007 14.573999999999998Q351.314 14.573999999999998 354.50700000000006 16.2015Q357.70000000000005 17.829 359.57550000000003 21.1615Q361.451 24.494 361.451 29.578Q361.451 30.446 361.42 31.670499999999997Q361.389 32.894999999999996 361.23400000000004 34.104H340.80500000000006Q340.867 36.057 341.68850000000003 37.483000000000004Q342.51000000000005 38.909 343.96700000000004 39.6995Q345.42400000000004 40.49 347.408 40.49Q349.764 40.49 351.40700000000004 39.730500000000006Q353.05 38.971000000000004 354.569 37.235L359.46700000000004 42.226Q357.32800000000003 44.737 354.3365 46.2405Q351.345 47.744 347.37700000000007 47.744ZM340.898 27.594H353.26700000000005Q353.081 25.765 352.337 24.463Q351.593 23.161 350.3065 22.494500000000002Q349.02000000000004 21.828 347.19100000000003 21.828Q344.68000000000006 21.828 342.95950000000005 23.316Q341.23900000000003 24.804 340.898 27.594Z" fill="currentColor"/></svg><select id="role-m" aria-label="Mode wireframe: lihat sebagai">
         <option value="guest">Belum masuk</option><option value="referral">Referral</option><option value="admin">Admin</option><option value="ops">Operasional</option>
       </select></div>
       <div class="topchips" id="chips"></div>
-    </div>
+  </div>
+  <main class="main">
     <div class="wrap" id="view"></div>
   </main>
   <nav class="tabs" id="tabs" aria-label="Menu"></nav>
@@ -452,7 +460,7 @@ const TARGETS = { [addDays(TODAY, 6)]: 0 }; // e.g. a day off
 W.push({ id: 'w1', ref: 'r1', amount: 300000, status: 'paid', at: addDays(TODAY, -6), paidAt: addDays(TODAY, -5), reference: 'BCA 0611 TRX 88210', payout: REF[0].payout });
 W.push({ id: 'w2', ref: 'r1', amount: 200000, status: 'requested', at: addDays(TODAY, -1), payout: REF[0].payout });
 W.push({ id: 'w3', ref: 'r2', amount: 500000, status: 'approved', at: addDays(TODAY, -2), payout: REF[1].payout });
-const pushN = (to, text, at = TODAY) => N.unshift({ to, text, at, read: false });
+const pushN = (to, text, at = TODAY, pid = null) => N.unshift({ to, text, at, read: false, pid });
 pushN('admin', 'Permintaan tarik saldo Rp200.000 dari Gipong', addDays(TODAY, -1));
 pushN('admin', '4 peserta baru menunggu review');
 pushN('admin', `Target ${fmtD(addDays(TODAY, 2))} dan ${fmtD(addDays(TODAY, 3))} belum terpenuhi`);
@@ -498,20 +506,20 @@ function submitParticipant(refId, f) {
   if (P.some((p) => p.status !== 'rejected' && p.email.toLowerCase() === f.email.trim().toLowerCase())) fail('Email ini sudah terdaftar');
   const p = mk('submitted', TODAY, refId);
   Object.assign(p, { name: f.name.trim(), wa: f.wa.trim(), email: f.email.trim().toLowerCase(), cloud: f.cloud.trim(), availDate: f.availDate || null, availTime: f.availTime || null, notes: f.notes.trim() });
-  pushN('admin', `Peserta baru dari ${refName(refId)}: ${p.name}`);
-  pushN(refId, `Pendaftaran ${p.name} terkirim. Tim akan mengeceknya.`);
+  pushN('admin', `Peserta baru dari ${refName(refId)}: ${p.name}`, TODAY, p.id);
+  pushN(refId, `Pendaftaran ${p.name} terkirim. Tim akan mengeceknya.`, TODAY, p.id);
   return p;
 }
 function review(ids, action, reason) {
   const to = { review: 'under_review', approve: 'approved', reject: 'rejected' }[action];
-  if (to === 'rejected' && !reason?.trim()) fail('Isi alasan penolakan');
+  if (to === 'rejected' && !reason?.trim()) fail('Tulis alasan penolakan dulu. Referral akan membacanya.');
   let n = 0;
   ids.map(pById).forEach((p) => {
     const okFrom = ['submitted', 'under_review'].includes(p.status) || (to === 'rejected' && ['approved', 'waiting_schedule'].includes(p.status));
     if (!okFrom) return;
     p.status = to; if (to === 'rejected') p.reason = reason.trim();
     ev(p, TODAY, to === 'approved' ? 'Disetujui admin' : to === 'rejected' ? 'Ditolak: ' + reason.trim() : 'Mulai direview');
-    if (to !== 'under_review') pushN(p.ref, to === 'approved' ? `${p.name} diterima. Tim sedang mencarikan jadwal.` : `${p.name} ditolak: ${reason.trim()}`);
+    if (to !== 'under_review') pushN(p.ref, to === 'approved' ? `${p.name} diterima. Tim sedang mencarikan jadwal.` : `${p.name} ditolak: ${reason.trim()}`, TODAY, p.id);
     n++;
   });
   return n;
@@ -535,19 +543,19 @@ function schedule(day, ids, time, allowOver) {
     ids.map(pById).forEach((p) => { const a = activeEntry(p.id); p.status = a ? p.status : p.status; });
     fail(`Kapasitas ${fmtD(day)} tinggal ${dayStats(day).remaining} dari target ${st.target}`);
   }
-  ids.map(pById).forEach((p) => { const e = activeEntry(p.id); ev(p, TODAY, `Dijadwalkan ${fmtD(e.day)} jam ${e.time || '-'}`); pushN(p.ref, `${p.name} dijadwalkan ${fmtDL(e.day)} jam ${(e.time || '-').replace(':', '.')}`); });
+  ids.map(pById).forEach((p) => { const e = activeEntry(p.id); ev(p, TODAY, `Dijadwalkan ${fmtD(e.day)} jam ${e.time || '-'}`); pushN(p.ref, `${p.name} dijadwalkan ${fmtDL(e.day)} jam ${(e.time || '-').replace(':', '.')}`, TODAY, p.id); });
   return { fresh, moved };
 }
 function unschedule(eid) {
   const e = E.find((x) => x.id === eid); e.state = 'cancelled';
   const p = pById(e.pid); p.status = 'waiting_schedule'; ev(p, TODAY, `Dikeluarkan dari jadwal ${fmtD(e.day)}`);
-  pushN(p.ref, `Jadwal ${p.name} dibatalkan. Tim akan mencarikan jadwal baru.`);
+  pushN(p.ref, `Jadwal ${p.name} dibatalkan. Tim akan mencarikan jadwal baru.`, TODAY, p.id);
 }
 const CONF_TO_STATUS = { not_contacted: 'scheduled', contacted: 'confirmation_pending', waiting: 'confirmation_pending', available: 'confirmed', unavailable: 'waiting_schedule', reschedule: 'waiting_schedule' };
 function setConfirmation(eid, conf) {
   const e = E.find((x) => x.id === eid && x.state === 'active'); if (!e) fail('Jadwal tidak ditemukan');
   e.conf = conf; const p = pById(e.pid); p.status = CONF_TO_STATUS[conf]; ev(p, TODAY, 'Konfirmasi H-1: ' + CONF[conf].label);
-  if (conf === 'unavailable' || conf === 'reschedule') pushN('admin', `${p.name} tidak bisa hadir ${fmtD(e.day)}`);
+  if (conf === 'unavailable' || conf === 'reschedule') pushN('admin', `${p.name} tidak bisa hadir ${fmtD(e.day)}`, TODAY, p.id);
 }
 function complete(eid) {
   const e = E.find((x) => x.id === eid && x.state === 'active'); if (!e) fail('Jadwal tidak ditemukan');
@@ -558,7 +566,7 @@ function complete(eid) {
 }
 function verify(ids, approve) {
   let n = 0;
-  C.filter((c) => ids.includes(c.id) && c.status === 'pending').forEach((c) => { c.status = approve ? 'approved' : 'void'; n++; if (approve) pushN(c.ref, `Komisi ${rp(c.amount)} dari ${pById(c.pid).name} masuk saldo`); });
+  C.filter((c) => ids.includes(c.id) && c.status === 'pending').forEach((c) => { c.status = approve ? 'approved' : 'void'; n++; if (approve) pushN(c.ref, `Komisi ${rp(c.amount)} dari ${pById(c.pid).name} masuk saldo`, TODAY, null); });
   return n;
 }
 function requestWithdrawal(refId, amount) {
@@ -605,8 +613,8 @@ const refNo = (w) => 'TS-' + w.id.slice(1).padStart(4, '0');
 // What a referral sees: four steps on a paving road, and one plain sentence.
 const STEPS = ['Terkirim', 'Dicek', 'Dijadwalkan', 'Selesai'];
 const REFST = {
-  submitted: { label: 'Menunggu dicek', tone: 'neu', now: 1 }, under_review: { label: 'Sedang dicek', tone: 'warn', now: 1 },
-  approved: { label: 'Diterima', tone: 'ok', now: 2 }, waiting_schedule: { label: 'Perlu jadwal baru', tone: 'warn', now: 2 },
+  submitted: { label: 'Sedang dicek', tone: 'warn', now: 1 }, under_review: { label: 'Sedang dicek', tone: 'warn', now: 1 },
+  approved: { label: 'Diterima', tone: 'ok', now: 2 }, waiting_schedule: { label: 'Menunggu jadwal baru', tone: 'warn', now: 2 },
   scheduled: { label: 'Dijadwalkan', tone: 'ok', now: 2 }, confirmation_pending: { label: 'Dijadwalkan', tone: 'ok', now: 2 },
   confirmed: { label: 'Siap hadir', tone: 'ok', now: 2 }, completed: { label: 'Selesai', tone: 'ok', now: 4 }, rejected: { label: 'Ditolak', tone: 'bad', now: 1 },
 };
@@ -633,7 +641,7 @@ function road(p, labels) {
   return `<div><div class="road ${bad ? 'bad' : ''}" role="img" aria-label="Tahap ${Math.min(now + 1, 4)} dari 4: ${REFST[p.status].label}">${blocks}</div>${lab}</div>`;
 }
 const byNewest = (a, b) => b.enteredOn.localeCompare(a.enteredOn) || Number(b.id.slice(1)) - Number(a.id.slice(1));
-const pRow = (p) => `<button type="button" class="row" data-open="${p.id}"><div class="prow"><div class="prow-top"><b>${esc(p.name)}</b>${refBadge(p)}</div><span class="meta-t">${esc(refLine(p))}</span>${road(p)}</div>${icon('i-chev', 'go')}</button>`;
+const pRow = (p) => `<button type="button" class="row" data-open="${p.id}"><div class="prow"><div class="prow-top"><b>${esc(p.name)}</b>${refBadge(p)}</div><span class="line-t">${esc(refLine(p))}</span>${road(p)}</div>${icon('i-chev', 'go')}</button>`;
 const waTo = (wa, text) => `https://wa.me/${normWa(wa)}?text=${encodeURIComponent(text)}`;
 
 // ---------------------------------------------------------------- state + nav
@@ -684,7 +692,7 @@ function fld(id, label, o = {}) {
 // ---------------------------------------------------------------- views: sign up / log in
 function signupCheck(user, wa) {
   const u = String(user || '').trim().toLowerCase(), out = {};
-  if (u) { const valid = /^[a-z0-9_.]{3,20}$/.test(u), free = !REF.some((r) => r.username === u); out.user = valid && free; out.userMsg = !valid ? 'Pakai 3 sampai 20 huruf kecil atau angka, tanpa spasi.' : 'Username ini sudah dipakai orang lain. Coba tambah angka di belakangnya.'; }
+  if (u) { const valid = /^[a-z0-9_.]{3,20}$/.test(u), free = !REF.some((r) => r.username === u); out.user = valid && free; out.userMsg = !valid ? (/\s/.test(u) ? `Tanpa spasi. Coba: ${u.replace(/\s+/g, '.').replace(/[^a-z0-9_.]/g, '')}` : '3 sampai 20 huruf kecil, angka, titik, atau garis bawah.') : 'Sudah dipakai orang lain. Coba tambah angka di belakangnya.'; }
   if (wa) { const n = normWa(wa), valid = n.length >= 10 && n.length <= 15, free = !REF.some((r) => normWa(r.wa) === n); out.wa = valid && free; out.waMsg = !valid ? 'Nomor belum lengkap. Contoh: 0812-3456-7890.' : 'Nomor ini sudah punya akun. Pilih Masuk di atas.'; }
   return out;
 }
@@ -708,31 +716,31 @@ function vMasuk() {
   const reg = st.authTab === 'daftar', e = st.authErr, c = st.chk;
   const pwWrap = (ctl) => `<div class="pw">${ctl}<button type="button" class="btn btn-3" id="showPw" aria-pressed="${st.showPw}" aria-controls="a-pw">${st.showPw ? 'Sembunyikan' : 'Lihat'}</button></div>`;
   const form = reg ? `
-      ${fld('a-user', 'Username', { autocomplete: 'username', extra: 'autocapitalize="none" spellcheck="false"', placeholder: 'contoh: budi.santoso', value: st.aUser, err: e['a-user'], ok: c.user, help: c.user ? 'Username bisa dipakai.' : c.user === false ? c.userMsg : 'Dipakai untuk masuk. Huruf kecil atau angka, tanpa spasi.' })}
-      ${fld('a-wa', 'Nomor WhatsApp', { type: 'tel', inputmode: 'tel', autocomplete: 'tel', placeholder: '0812-3456-7890', value: st.aWa, err: e['a-wa'], ok: c.wa, help: c.wa ? 'Nomor bisa dipakai.' : c.wa === false ? c.waMsg : 'Nomor ini juga bisa dipakai untuk masuk.' })}
+      ${fld('a-user', 'Nama pengguna (username)', { autocomplete: 'username', extra: 'autocapitalize="none" spellcheck="false"', placeholder: 'contoh: budi.santoso', value: st.aUser, err: e['a-user'] || (c.user === false ? c.userMsg : ''), ok: c.user, help: c.user ? 'Bisa dipakai.' : c.user === false ? c.userMsg : 'Dipakai untuk masuk. Huruf kecil, angka, titik, atau garis bawah. Tanpa spasi.' })}
+      ${fld('a-wa', 'Nomor WhatsApp', { type: 'tel', inputmode: 'tel', autocomplete: 'tel', placeholder: '0812-3456-7890', value: st.aWa, err: e['a-wa'] || (c.wa === false ? c.waMsg : ''), ok: c.wa, help: c.wa ? 'Nomor bisa dipakai.' : c.wa === false ? c.waMsg : 'Nomor ini juga bisa dipakai untuk masuk.' })}
       ${fld('a-pw', 'Password', { type: st.showPw ? 'text' : 'password', autocomplete: 'new-password', value: st.aPw, err: e['a-pw'], help: 'Minimal 6 huruf atau angka.', wrap: pwWrap })}`
     : `
-      ${fld('a-id', 'Username atau nomor WhatsApp', { autocomplete: 'username', extra: 'autocapitalize="none" spellcheck="false"', value: st.aId })}
+      ${fld('a-id', 'Nama pengguna atau nomor WhatsApp', { autocomplete: 'username', extra: 'autocapitalize="none" spellcheck="false"', value: st.aId })}
       ${fld('a-pw', 'Password', { type: st.showPw ? 'text' : 'password', autocomplete: 'current-password', value: st.aPw, wrap: pwWrap })}
-      ${e.form ? `<div class="note" role="alert">${icon('i-alert')}<span>${esc(e.form)}</span></div>` : ''}`;
+      ${e.form ? `<div class="note ic err" role="alert">${icon('i-alert')}<span>${esc(e.form)}</span></div>` : ''}`;
   return `<section class="card card-pad grid" style="gap:var(--s5)">
     <div class="grid" style="gap:var(--s2)"><h1>${reg ? 'Buat akun referral' : 'Masuk ke akun Anda'}</h1>
-      <p class="muted">${reg ? 'Cukup username, nomor WhatsApp, dan password. Tidak perlu email, langsung bisa dipakai.' : 'Pakai username atau nomor WhatsApp yang Anda daftarkan.'}</p></div>
+      <p class="muted">${reg ? 'Cukup nama pengguna, nomor WhatsApp, dan password. Tidak perlu email, langsung bisa dipakai.' : 'Pakai nama pengguna atau nomor WhatsApp yang Anda daftarkan.'}</p></div>
     <div class="seg full" role="group" aria-label="Pilih daftar atau masuk"><button type="button" data-auth="daftar" aria-pressed="${reg}">Daftar baru</button><button type="button" data-auth="masuk" aria-pressed="${!reg}">Masuk</button></div>
     <form id="authForm" class="grid" novalidate>
       ${form}
       <button class="btn btn-1 btn-block" type="submit">${reg ? 'Daftar dan masuk' : 'Masuk'}</button>
     </form>
     ${reg ? '' : `<div><button type="button" class="btn-link" id="forgot" aria-expanded="${st.forgot}">Lupa password?</button>
-      ${st.forgot ? `<div class="grid" style="gap:var(--s3);margin-top:var(--s2)"><p class="meta-t">Chat admin di WhatsApp dan sebutkan username Anda. Admin akan membuatkan password baru.</p>
-        <div><a class="btn wa" href="${waTo(S.adminWa, 'Halo admin, saya lupa password akun referral. Username saya: ')}" target="_blank" rel="noopener">${icon('i-chat')}Chat admin</a></div><p class="meta-t">Nomor admin: <span class="mono">${esc(S.adminWa)}</span> (contoh)</p></div>` : ''}</div>`}
+      ${st.forgot ? `<div class="grid" style="gap:var(--s3);margin-top:var(--s2)"><p class="meta-t">Chat admin di WhatsApp dan sebutkan nomor WhatsApp Anda. Admin akan membuatkan password baru.</p>
+        <div><a class="btn wa" href="${waTo(S.adminWa, 'Halo admin, saya lupa password akun referral saya.')}" target="_blank" rel="noopener">${icon('i-chat')}Chat admin</a></div><p class="meta-t">Nomor admin: <span class="mono">${esc(S.adminWa)}</span> (contoh)</p></div>` : ''}</div>`}
     <p class="proto">Wireframe: coba masuk dengan <b>gipong</b> atau <b>0812-1111-1111</b>, password <b>demo1234</b>.</p>
   </section>`;
 }
 
 // ---------------------------------------------------------------- views: referral portal
 function vBeranda() {
-  const mine = P.filter((p) => p.ref === ME).sort(byNewest), w = wallet(ME), tomorrow = addDays(TODAY, 1);
+  const mine = P.filter((p) => p.ref === ME && !p.replacedBy).sort(byNewest), w = wallet(ME), tomorrow = addDays(TODAY, 1);
   const going = mine.filter((p) => !['completed', 'rejected'].includes(p.status)).length, done = mine.filter((p) => p.status === 'completed').length;
   const attn = [];
   mine.filter((p) => p.status === 'rejected').forEach((p) => attn.push(`<div class="row"><div class="prow"><b>${esc(p.name)} ditolak</b><span class="meta-t">${esc(p.reason)}. Perbaiki datanya lalu kirim lagi.</span></div><button type="button" class="btn btn-3 btn-sm" data-fix="${p.id}">Perbaiki</button></div>`));
@@ -741,15 +749,16 @@ function vBeranda() {
   return head('', 'Beranda', mine.length ? `${going} peserta sedang berjalan, ${done} sudah selesai.` : '') + `
   <button type="button" class="btn btn-1 btn-block" data-go="daftar">${icon('i-plus')}Daftarkan peserta</button>
   <section class="card"><button type="button" class="row" data-go="saldo" aria-label="Saldo bisa ditarik ${rp(w.available)}. Buka Saldo"><div class="money"><span class="label">Saldo bisa ditarik</span><span class="big">${rp(w.available)}</span>${w.pending ? `<span class="meta-t">${rp(w.pending)} lagi sedang dicek tim</span>` : ''}<span class="btn-link" style="min-height:0;padding:0;margin-top:var(--s2)">Tarik saldo</span></div>${icon('i-chev', 'go')}</button></section>
-  ${shown.length ? `<section class="card"><div class="card-head"><h2>Perlu perhatian</h2>${attn.length > shown.length ? `<span class="meta-t">${attn.length - shown.length} lagi di menu Peserta</span>` : ''}</div><div class="list">${shown.join('')}</div></section>` : ''}
+  ${shown.length ? `<section class="card"><div class="card-head"><h2>Perlu perhatian</h2>${attn.length > shown.length ? `<button type="button" class="btn-link" data-pfgo="attn">Lihat semua (${attn.length})</button>` : ''}</div><div class="list">${shown.join('')}</div></section>` : ''}
   <section class="card"><div class="card-head"><h2>Peserta terbaru</h2>${mine.length > 5 ? '<button type="button" class="btn-link" data-go="peserta">Lihat semua</button>' : ''}</div>
     ${mine.length ? `<div class="list">${mine.slice(0, 5).map(pRow).join('')}</div>` : `<div class="empty">${icon('i-users')}<b>Belum ada peserta</b><span>Daftarkan calon peserta pertama Anda. Setelah dicek tim, statusnya muncul di sini.</span></div>`}
   </section>`;
 }
 function vPeserta() {
-  const mine = P.filter((p) => p.ref === ME).sort(byNewest), q = st.q.trim().toLowerCase(), qWa = normWa(q);
-  const groups = { all: () => true, going: (p) => !['completed', 'rejected'].includes(p.status), done: (p) => p.status === 'completed', rejected: (p) => p.status === 'rejected' };
-  const names = { all: 'Semua', going: 'Berjalan', done: 'Selesai', rejected: 'Ditolak' };
+  const mine = P.filter((p) => p.ref === ME && !p.replacedBy).sort(byNewest), q = st.q.trim().toLowerCase(), qWa = normWa(q);
+  const tm = addDays(TODAY, 1);
+  const groups = { all: () => true, attn: (p) => p.status === 'rejected' || E.some((e) => e.pid === p.id && e.state === 'active' && e.day === tm), going: (p) => !['completed', 'rejected'].includes(p.status), done: (p) => p.status === 'completed', rejected: (p) => p.status === 'rejected' };
+  const names = { all: 'Semua', attn: 'Perlu perhatian', going: 'Berjalan', done: 'Selesai', rejected: 'Ditolak' };
   const rows = mine.filter(groups[st.pFilter]).filter((p) => !q || p.name.toLowerCase().includes(q) || p.email.includes(q) || (qWa.length >= 4 && normWa(p.wa).includes(qWa)));
   return head('', 'Peserta', 'Semua calon peserta yang Anda daftarkan. Ketuk nama untuk melihat detailnya.', `<button type="button" class="btn btn-1" data-go="daftar">${icon('i-plus')}Daftarkan peserta</button>`) + `
   <section class="card">
@@ -769,21 +778,22 @@ function vDaftar() {
       <h1>Pendaftaran ${esc(p.name)} terkirim</h1>
       <p class="muted">Tim akan mengecek datanya. Anda dapat notifikasi saat peserta diterima dan saat jadwalnya ditentukan.</p>
       <div style="width:100%">${road(p, true)}</div>
+      <p class="line-t">${esc(refLine(p))}</p>
       <div class="head-actions"><button type="button" class="btn btn-1" id="again">${icon('i-plus')}Daftarkan peserta lain</button><button type="button" class="btn btn-3" data-go="peserta">Lihat semua peserta</button></div>
     </section>`;
   }
   const d = st.regDraft, e = st.regErr;
   const times = [['09:00', 'Pagi'], ['13:00', 'Siang'], ['16:00', 'Sore'], ['19:00', 'Malam']];
-  return head('', 'Daftarkan peserta', 'Yang wajib hanya nama, nomor WhatsApp, dan email.') + `
+  return head('', 'Daftarkan peserta', 'Yang wajib hanya nama, nomor WhatsApp, dan email. Isian tersimpan di HP ini kalau Anda pindah ke WhatsApp.') + `
   <form class="card card-pad grid" id="regForm" novalidate style="gap:var(--s5)">
     ${fld('f-name', 'Nama peserta', { autocomplete: 'off', value: d.name, err: e['f-name'] })}
     ${fld('f-wa', 'Nomor WhatsApp peserta', { type: 'tel', inputmode: 'tel', autocomplete: 'off', placeholder: '0812-3456-7890', value: d.wa, err: e['f-wa'], help: 'Tim akan menghubungi nomor ini untuk jadwal.' })}
-    ${fld('f-email', 'Email peserta', { type: 'email', inputmode: 'email', autocomplete: 'off', placeholder: 'nama@gmail.com', value: d.email, err: e['f-email'] })}
+    ${fld('f-email', 'Email peserta', { type: 'email', inputmode: 'email', autocomplete: 'off', placeholder: 'nama@gmail.com', value: d.email, err: e['f-email'], help: 'Email yang dipakai peserta. Tanyakan ke peserta kalau belum tahu.' })}
     <fieldset class="field" style="border:0;padding:0;margin:0"><legend style="font-size:var(--t-meta);font-weight:600;padding:0;margin-bottom:var(--s2)">Jam yang cocok <span class="opt" style="font-weight:400;color:var(--text-2)">(boleh kosong)</span></legend>
       <div class="chips">${times.map(([v, l]) => `<button type="button" class="chip" data-time="${v}" aria-pressed="${st.regTime === v}">${l}<small>${fmtT(v)}</small></button>`).join('')}</div></fieldset>
     ${fld('f-date', 'Bisa mulai tanggal', { type: 'date', min: TODAY, value: d.date, opt: true, help: 'Kosongkan kalau kapan saja bisa.' })}
     <details class="more" ${d.cloud || d.notes ? 'open' : ''}><summary>Data tambahan</summary><div>
-      ${fld('f-cloud', 'Referensi akun cloud', { autocomplete: 'off', value: d.cloud, opt: true, help: 'ID atau nama akun saja. Jangan pernah tulis password.' })}
+      ${fld('f-cloud', 'ID akun peserta', { autocomplete: 'off', value: d.cloud, opt: true, help: 'Kalau peserta sudah punya akun, tulis ID atau namanya. Jangan pernah tulis password.' })}
       ${fld('f-notes', 'Catatan untuk tim', { textarea: true, value: d.notes, opt: true })}
     </div></details>
     <label class="check" for="f-consent" ${e['f-consent'] ? 'aria-invalid="true"' : ''}><input type="checkbox" id="f-consent" ${d.consent ? 'checked' : ''} ${e['f-consent'] ? 'aria-describedby="f-consent-h"' : ''}><span>Peserta sudah setuju dihubungi tim lewat WhatsApp.</span></label>
@@ -798,11 +808,12 @@ function vSaldo() {
   const okAmt = amt && !amtErr;
   const rc = st.wReceipt && W.find((x) => x.id === st.wReceipt);
   let tarik;
-  if (w.available < S.withdrawMin) tarik = `<div class="note">${icon('i-alert')}<span>Saldo bisa ditarik mulai ${rp(S.withdrawMin)}. Saldo bertambah setiap peserta Anda selesai dan dicek tim.</span></div>`;
+  if (w.available < S.withdrawMin) tarik = `<div class="note ic">${icon('i-alert')}<span>Saldo bisa ditarik mulai ${rp(S.withdrawMin)}. Saldo bertambah setiap peserta Anda selesai dan dicek tim.</span></div>`;
   else if (!r.payout || st.editPayout) {
     const pe = st.payErr;
     tarik = `<form id="payForm" class="grid" novalidate><p class="muted">Ke mana uangnya dikirim?</p>
-      ${fld('pay-m', 'Bank atau e-wallet', { placeholder: 'BCA, BRI, DANA, GoPay…', value: r.payout?.method, err: pe['pay-m'] })}
+      <label class="field" for="pay-m"><span>Bank atau e-wallet</span><select class="input" id="pay-m" ${pe['pay-m'] ? 'aria-invalid="true" aria-describedby="pay-m-h"' : ''}><option value="">Pilih…</option>${['BCA', 'BRI', 'BNI', 'Mandiri', 'BSI', 'CIMB Niaga', 'Permata', 'DANA', 'GoPay', 'OVO', 'ShopeePay'].map((b) => `<option ${st.payBank === b || (!st.payBank && r.payout?.method === b) ? 'selected' : ''}>${b}</option>`).join('')}<option value="lain" ${st.payBank === 'lain' || (r.payout && !['BCA', 'BRI', 'BNI', 'Mandiri', 'BSI', 'CIMB Niaga', 'Permata', 'DANA', 'GoPay', 'OVO', 'ShopeePay'].includes(r.payout.method) && !st.payBank) ? 'selected' : ''}>Lainnya</option></select>${pe['pay-m'] ? `<span class="help bad" id="pay-m-h">${esc(pe['pay-m'])}</span>` : ''}</label>
+      ${st.payBank === 'lain' || (r.payout && !['BCA', 'BRI', 'BNI', 'Mandiri', 'BSI', 'CIMB Niaga', 'Permata', 'DANA', 'GoPay', 'OVO', 'ShopeePay'].includes(r.payout.method) && !st.payBank) ? fld('pay-o', 'Nama bank atau e-wallet lain', { value: r.payout && !['BCA', 'BRI', 'BNI', 'Mandiri', 'BSI', 'CIMB Niaga', 'Permata', 'DANA', 'GoPay', 'OVO', 'ShopeePay'].includes(r.payout.method) ? r.payout.method : '', err: pe['pay-o'] }) : ''}
       ${fld('pay-a', 'Nomor rekening atau nomor HP', { inputmode: 'numeric', value: r.payout?.account, err: pe['pay-a'] })}
       ${fld('pay-n', 'Nama pemilik rekening', { value: r.payout?.name, err: pe['pay-n'], help: 'Sesuai nama di bank atau e-wallet.' })}
       <div class="head-actions"><button type="submit" class="btn btn-2">Simpan rekening</button>${r.payout ? '<button type="button" class="btn btn-3" id="payCancel">Batal</button>' : ''}</div></form>`;
@@ -811,7 +822,7 @@ function vSaldo() {
     tarik = `<div class="grid" style="gap:var(--s3)"><span class="field"><span>Mau tarik berapa?</span></span>
       <div class="chips" role="group" aria-label="Pilih nominal">${opts.map((v) => `<button type="button" class="chip" data-amt="${v}" aria-pressed="${!custom && st.wAmount === v}">${v === w.available ? `Semua <small>${rp(v)}</small>` : rp(v)}</button>`).join('')}</div>
       ${fld('w-custom', 'Atau ketik nominal', { inputmode: 'numeric', placeholder: `Minimal ${rp(S.withdrawMin)}`, value: st.wCustom ? Number(st.wCustom).toLocaleString('id-ID') : '', err: custom ? amtErr : '' })}
-      <p class="meta-t">Dikirim ke <b>${esc(r.payout.method)} ${esc(r.payout.account)}</b> a.n. ${esc(r.payout.name)}. <button type="button" class="btn-link" id="payEdit" style="min-height:0">Ganti</button></p>
+      <p class="meta-t">Dikirim ke <b>${esc(r.payout.method)} ${esc(r.payout.account)}</b> a.n. ${esc(r.payout.name)}. </p><div><button type="button" class="btn btn-3 btn-sm" id="payEdit">Ganti rekening</button></div>
       ${st.wConfirm && okAmt ? `<div class="confirm" role="group" aria-label="Konfirmasi tarik saldo"><b>Tarik ${rp(amt)} ke ${esc(r.payout.method)} ${esc(r.payout.account)} a.n. ${esc(r.payout.name)}?</b>
           <span class="meta-t">Uang ini ditahan dari saldo sampai admin selesai mentransfer.</span>
           <div class="head-actions"><button type="button" class="btn btn-1" id="w-yes">Ya, tarik saldo</button><button type="button" class="btn btn-3" id="w-no">Batal</button></div></div>`
@@ -826,18 +837,19 @@ function vSaldo() {
     <div class="money"><span class="label">Bisa ditarik</span><span class="big">${rp(w.available)}</span></div>
     <div class="money-rows">
       <div><span>Komisi sedang dicek tim</span><b>${rp(w.pending)}</b></div>
-      ${w.onHold ? `<div><span>Sedang ditarik</span><b>${rp(w.onHold)}</b></div>` : ''}
-      <div><span>Sudah ditarik</span><b>${rp(w.withdrawn)}</b></div>
+      ${w.onHold ? `<div><span>Sedang diproses admin</span><b>${rp(w.onHold)}</b></div>` : ''}
+      <div><span>Sudah masuk rekening Anda</span><b>${rp(w.withdrawn)}</b></div>
     </div>
   </section>
   ${rc ? '' : `<section class="card card-pad grid"><h2>Tarik saldo</h2>${tarik}</section>`}
+  <details class="more card"><summary>Cara kerja komisi</summary><div><p>Setiap peserta Anda yang selesai memberi komisi ${rp(S.commission)}. Tim mengecek dulu, lalu komisinya masuk ke saldo.</p><p>Saldo bisa ditarik mulai ${rp(S.withdrawMin)} ke rekening atau e-wallet Anda. Admin mentransfer dan memasang buktinya di Riwayat.</p><div><a class="btn wa" href="${waTo(S.adminWa, 'Halo admin, saya mau tanya soal saldo referral saya.')}" target="_blank" rel="noopener">${icon('i-chat')}Tanya admin</a></div></div></details>
   <section class="card"><div class="card-head"><h2>Riwayat tarik saldo</h2></div>
     <div class="list">${mineW.map((x) => `<div class="row"><div class="prow"><div class="prow-top"><b class="num">${rp(x.amount)}</b>${badge(WST[x.status])}</div>
-      <span class="meta-t">${fmtDL(x.at)} ke ${esc(x.payout.method)} ${esc(x.payout.account)}</span>
+      <span class="meta-t">${fmtDL(x.at)} ke ${esc(x.payout.method)} ${esc(x.payout.account)}</span><span class="meta-t">Nomor permintaan <span class="mono">${refNo(x)}</span></span>
       ${x.status === 'paid' ? `<span class="meta-t">Bukti transfer: <span class="mono">${esc(x.reference)}</span></span>` : x.status === 'rejected' ? `<span class="meta-t">Alasan: ${esc(x.note || '-')}. Saldo sudah dikembalikan.</span>` : ''}</div>
       ${x.status === 'requested' ? `<button type="button" class="btn btn-3 btn-sm" data-wcancel="${x.id}">Batalkan</button>` : ''}</div>`).join('') || `<div class="empty"><span>Belum pernah tarik saldo.</span></div>`}</div>
   </section>
-  ${mineC.length ? `<details class="more card"><summary>Asal komisi (${mineC.length} peserta)</summary><div class="list" style="padding:0">${mineC.slice(0, 12).map((c) => `<div class="row"><div class="prow"><b>${esc(pById(c.pid).name)}</b><span class="meta-t">Selesai ${fmtDL(c.at)}</span></div><div class="prow" style="justify-items:end"><b class="num">${rp(c.amount)}</b>${badge(c.status === 'approved' ? ['Masuk saldo', 'ok'] : c.status === 'pending' ? ['Sedang dicek', 'warn'] : ['Batal', 'neu'])}</div></div>`).join('')}</div></details>` : ''}`;
+  ${mineC.length ? `<details class="more card"><summary>Asal komisi (${mineC.length} peserta)</summary><div class="list" style="padding:0">${mineC.length > 12 ? `<p class="meta-t" style="padding:0 var(--s4)">12 terbaru dari ${mineC.length}. Daftar lengkap ada di aplikasi.</p>` : ''}${mineC.slice(0, 12).map((c) => `<div class="row"><div class="prow"><b>${esc(pById(c.pid).name)}</b><span class="meta-t">Selesai ${fmtDL(c.at)}</span></div><div class="prow" style="justify-items:end"><b class="num">${rp(c.amount)}</b>${badge(c.status === 'approved' ? ['Masuk saldo', 'ok'] : c.status === 'pending' ? ['Sedang dicek', 'warn'] : ['Batal', 'neu'])}</div></div>`).join('')}</div></details>` : ''}`;
 }
 function notifTarget(text) {
   const t = text.toLowerCase();
@@ -847,7 +859,7 @@ function notifTarget(text) {
 function vNotif() {
   const to = st.role === 'referral' ? ME : 'admin', list = N.filter((n) => n.to === to), unread = list.filter((n) => !n.read).length;
   return head('', 'Notifikasi', unread ? `${unread} belum dibaca.` : 'Semua sudah dibaca.', unread ? '<button type="button" class="btn btn-3" id="readAll">Tandai semua dibaca</button>' : '') + `
-  <section class="card"><div class="list">${list.map((n, i) => `<button type="button" class="row" data-notif="${N.indexOf(n)}"><div class="prow"><span style="font-weight:${n.read ? 400 : 600}">${esc(n.text)}</span><span class="meta-t">${rel(n.at)}</span></div>${n.read ? icon('i-chev', 'go') : badge(['Baru', 'warn'])}</button>`).join('') || `<div class="empty">${icon('i-bell')}<span>Belum ada notifikasi. Kabar soal peserta dan saldo Anda akan muncul di sini.</span></div>`}</div></section>`;
+  <section class="card"><div class="list">${list.map((n, i) => `<button type="button" class="row" data-notif="${N.indexOf(n)}" ${n.pid ? 'aria-label="Buka ' + esc(n.text) + '"' : ''}><div class="prow"><span style="font-weight:${n.read ? 400 : 600}">${esc(n.text)}</span><span class="meta-t">${rel(n.at)}</span></div>${n.read ? icon('i-chev', 'go') : badge(['Baru', 'warn'])}</button>`).join('') || `<div class="empty">${icon('i-bell')}<span>Belum ada notifikasi. Kabar soal peserta dan saldo Anda akan muncul di sini.</span></div>`}</div></section>`;
 }
 
 function vHari() {
@@ -855,18 +867,18 @@ function vHari() {
   const pct = (n) => s.target ? Math.min(100, (n / Math.max(s.target, s.scheduled)) * 100) : 0;
   const week = Array.from({ length: 7 }, (_, i) => dayStats(addDays(TODAY, i)));
   const fill = s.scheduled - s.unavailable;
-  return head('Hari ini', `${fmtDL(TODAY)}: ${s.confirmed} dari target ${s.target} peserta sudah konfirmasi hadir`, 'Angka ini dihitung langsung dari jadwal. Membuka layar lain tidak memuat ulang data.') + `
+  return head('Hari ini', `${fmtDL(TODAY)}: ${s.confirmed} dari target ${s.target} peserta sudah konfirmasi hadir`, 'Angka diperbarui setiap ada perubahan jadwal atau konfirmasi.') + `
   <div class="kpis">
-    <div class="kpi"><span class="label">Target hari ini</span><span class="v">${s.target}</span><span class="s">Default ${S.dailyTarget} per hari</span></div>
-    <div class="kpi"><span class="label">Terjadwal</span><span class="v">${s.scheduled}</span><span class="s">${fill >= s.target ? 'Target terpenuhi' : `Kurang ${s.target - fill}`}</span></div>
-    <div class="kpi okk"><span class="label">Terkonfirmasi</span><span class="v">${s.confirmed}</span><span class="s">Bisa hadir</span></div>
-    <div class="kpi hi"><span class="label">Belum pasti</span><span class="v">${s.pending}</span><span class="s">Belum dijawab</span></div>
+    <div class="kpi"><span class="label">Target hari ini</span><span class="v">${s.target}</span><span class="s">Biasanya ${S.dailyTarget} per hari</span></div>
+    <div class="kpi"><span class="label">Terjadwal</span><span class="v">${s.scheduled}</span><span class="s">${s.unavailable ? `${s.unavailable} tidak bisa, perlu diganti` : fill >= s.target ? 'Target terpenuhi' : `Kurang ${s.target - fill}`}</span></div>
+    <div class="kpi"><span class="label">Terkonfirmasi</span><span class="v">${s.confirmed}</span><span class="s">Bisa hadir</span></div>
+    <div class="kpi"><span class="label">Belum pasti</span><span class="v">${s.pending}</span><span class="s">Belum dijawab</span></div>
     <div class="kpi"><span class="label">Tidak bisa</span><span class="v">${s.unavailable}</span><span class="s">Perlu jadwal ulang</span></div>
     <div class="kpi"><span class="label">Selesai</span><span class="v">${s.completed}</span><span class="s">Komisi dibuat otomatis</span></div>
     <div class="kpi"><span class="label">Sisa kapasitas</span><span class="v">${s.remaining}</span><span class="s">Tempat kosong</span></div>
   </div>
   <section class="card card-pad progress">
-    <div style="display:flex;justify-content:space-between;gap:var(--s3);flex-wrap:wrap"><h2>Pencapaian target</h2><span class="num" style="font-weight:600">${s.completed} selesai · ${s.confirmed} hadir · target ${s.target}</span></div>
+    <div style="display:flex;justify-content:space-between;gap:var(--s3);flex-wrap:wrap"><h2>Pencapaian target</h2><span class="num" style="font-weight:600">${s.completed} selesai, ${s.confirmed} bisa hadir, target ${s.target}</span></div>
     <div class="bar" role="img" aria-label="Selesai ${s.completed}, terkonfirmasi ${s.confirmed - s.completed}, belum pasti ${s.pending}, tidak bisa ${s.unavailable}">
       <span class="p-done" style="width:${pct(s.completed)}%"></span><span class="p-conf" style="width:${pct(Math.max(s.confirmed - s.completed, 0))}%"></span><span class="p-pend" style="width:${pct(s.pending)}%"></span><span class="p-bad" style="width:${pct(s.unavailable)}%"></span>
     </div>
@@ -918,7 +930,7 @@ function vSemua() {
       <thead><tr><th style="width:36px"><input type="checkbox" id="selAll" aria-label="Pilih semua yang tampil" ${shown.length && shown.every((p) => st.sel.has(p.id)) ? 'checked' : ''}></th><th>Peserta</th><th>Referral</th><th>Masuk</th><th>Ketersediaan</th><th>Jadwal</th><th>Status</th></tr></thead>
       <tbody>${shown.map((p) => { const e = latestEntry(p.id); return `<tr class="click ${st.sel.has(p.id) ? 'sel' : ''}" data-open="${p.id}">
         <td><input type="checkbox" data-sel="${p.id}" ${st.sel.has(p.id) ? 'checked' : ''} aria-label="Pilih ${esc(p.name)}"></td>
-        <td><div class="who"><b>${esc(p.name)}</b><small>${esc(p.email)} · <span class="mono">${esc(p.wa)}</span></small></div></td>
+        <td><div class="who"><b>${esc(p.name)}</b><small>${esc(p.email)}</small><small class="num">${esc(p.wa)}</small></div></td>
         <td>${esc(refName(p.ref))}</td><td class="num">${fmtD(p.enteredOn)}</td>
         <td class="num">${p.availDate ? fmtD(p.availDate) : '-'} ${esc(p.availTime || '')}</td>
         <td>${e ? `<div class="who"><b class="num">${rel(e.day)}</b><small>${e.state === 'active' ? CONF[e.conf].label : 'Selesai'}</small></div>` : '<span class="muted">-</span>'}</td>
@@ -948,17 +960,17 @@ function vJadwal() {
   return head('Jadwal', st.role === 'admin' ? 'Isi target harian dan atur siapa datang tanggal berapa' : 'Jadwal peserta', 'Kotak hijau = target terpenuhi, oranye = belum penuh, abu-abu = belum ada jadwal. Pilih tanggal untuk melihat dan mengatur isinya.') + `
   <div class="split">
     <section class="card">
-      <div class="card-head"><h2>${BULAN_PANJANG[m - 1]} ${y}</h2><div class="head-actions"><button class="btn btn-3 btn-sm" data-month="${prevM}" aria-label="Bulan sebelumnya">‹</button><button class="btn btn-3 btn-sm" data-month="${TODAY.slice(0, 7)}">Bulan ini</button><button class="btn btn-3 btn-sm" data-month="${nextM}" aria-label="Bulan berikutnya">›</button></div></div>
+      <div class="card-head"><h2>${BULAN_PANJANG[m - 1]} ${y}</h2><div class="head-actions"><button class="btn btn-3 btn-sm" data-month="${prevM}" aria-label="Bulan sebelumnya">${icon('i-chev-l')}</button><button class="btn btn-3 btn-sm" data-month="${TODAY.slice(0, 7)}">Bulan ini</button><button class="btn btn-3 btn-sm" data-month="${nextM}" aria-label="Bulan berikutnya">${icon('i-chev')}</button></div></div>
       <div class="cal">${['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].map((d) => `<div class="dow">${d}</div>`).join('')}${cells.join('')}</div>
       <div class="cal-legend">${Object.values(DAYST).map((v) => badge(v)).join('')}</div>
     </section>
     <section class="card">
       <div class="card-head"><div><h2>${fmtDL(st.calDay)}</h2>${rel(st.calDay) !== fmtDL(st.calDay) ? `<span class="small muted">${rel(st.calDay)}</span>` : ''}</div>${badge(DAYST[s.status])}</div>
       <div class="card-pad grid">
-        <div class="kpis" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+        <div class="kpis" style="grid-template-columns:repeat(3,minmax(0,1fr))" data-flat>
           <div class="kpi"><span class="label">Target</span><span class="v">${s.target}</span></div>
           <div class="kpi"><span class="label">Terisi</span><span class="v">${s.scheduled - s.unavailable}</span></div>
-          <div class="kpi hi"><span class="label">Sisa</span><span class="v">${s.remaining}</span></div>
+          <div class="kpi"><span class="label">Sisa</span><span class="v">${s.remaining}</span></div>
         </div>
         ${canEdit ? `<div style="display:flex;gap:var(--s2);align-items:end;flex-wrap:wrap"><label class="field" style="flex:1;min-width:128px"><span>Target tanggal ini</span><input class="input num" id="tgt" type="number" min="0" max="500" value="${s.target}"></label><button class="btn btn-2" id="tgtSave">Simpan target</button></div>` : ''}
       </div>
@@ -985,17 +997,17 @@ function vH1() {
     `<div class="seg" role="group" aria-label="Tanggal">${[0, 1, 2].map((d) => `<button type="button" data-h1="${addDays(TODAY, d)}" aria-pressed="${day === addDays(TODAY, d)}">${rel(addDays(TODAY, d))}</button>`).join('')}</div>`) + `
   <div class="kpis">
     <div class="kpi"><span class="label">Terjadwal</span><span class="v">${s.scheduled}</span><span class="s">Target ${s.target}</span></div>
-    <div class="kpi hi"><span class="label">Belum pasti</span><span class="v">${s.pending}</span><span class="s">Perlu dihubungi</span></div>
-    <div class="kpi okk"><span class="label">Bisa hadir</span><span class="v">${s.confirmed}</span></div>
+    <div class="kpi"><span class="label">Belum pasti</span><span class="v">${s.pending}</span><span class="s">Perlu dihubungi</span></div>
+    <div class="kpi"><span class="label">Bisa hadir</span><span class="v">${s.confirmed}</span></div>
     <div class="kpi"><span class="label">Tidak bisa</span><span class="v">${s.unavailable}</span><span class="s">Pindahkan di Jadwal</span></div>
   </div>
   <section class="card"><div class="list">${ents.map((e) => { const p = pById(e.pid); const done = e.state === 'completed'; return `<div class="row h1-row">
-    <div><b>${esc(p.name)}</b><div class="meta"><span class="mono">${fmtT(e.time)}</span><span>via ${esc(refName(p.ref))}</span><span class="mono">${esc(p.wa)}</span></div>
+    <div><b>${esc(p.name)}</b><div class="meta"><span class="num">Jam ${fmtT(e.time)}</span><span>via ${esc(refName(p.ref))}</span><span class="num">${esc(p.wa)}</span></div>
       ${NOTES.filter((n) => n.pid === p.id).slice(-1).map((n) => `<div class="small muted" style="margin-top:var(--s1)">Catatan: ${esc(n.text)}</div>`).join('')}</div>
     <div class="h1-actions">
       ${done ? `<div class="line">${badge(['Selesai', 'ok'])}</div>` : `<div class="line">${p.consent ? `<a class="btn wa btn-sm" href="${waLink(p, e)}" target="_blank" rel="noopener">Chat WhatsApp</a>` : '<span class="small muted">Belum setuju dihubungi</span>'}
         <div class="seg" role="group" aria-label="Hasil konfirmasi ${esc(p.name)}">${['contacted', 'waiting', 'available', 'unavailable', 'reschedule'].map((c) => `<button type="button" data-conf="${e.id}:${c}" aria-pressed="${e.conf === c}">${CONF[c].label}</button>`).join('')}</div></div>
-        <div class="line"><input class="input" data-note="${p.id}" placeholder="Catatan untuk tim" style="max-width:240px"><button class="btn btn-2 btn-sm" data-complete="${e.id}" ${e.day > TODAY ? 'disabled title="Bisa ditandai selesai pada hari jadwalnya"' : ''}>Tandai selesai</button></div>`}
+        <div class="line"><input class="input" data-note="${p.id}" aria-label="Catatan untuk ${esc(p.name)}" placeholder="Catatan untuk tim" style="max-width:240px"><button class="btn btn-3 btn-sm" data-savenote="${p.id}">Simpan catatan</button>${e.day <= TODAY ? `<button class="btn btn-2 btn-sm" data-complete="${e.id}">Tandai selesai</button>` : ''}</div>`}
     </div></div>`; }).join('') || '<div class="empty">Tidak ada peserta di tanggal ini.</div>'}</div></section>
   <p class="proto">Tombol WhatsApp membuka chat dengan pesan template: “${esc(S.waTemplate)}” Nomor juga ditampilkan, kalau perlu disalin manual.</p>`;
 }
@@ -1003,21 +1015,21 @@ function vUang() {
   const pend = C.filter((c) => c.status === 'pending').sort((a, b) => b.at.localeCompare(a.at));
   const ws = W.filter((w) => ['requested', 'approved'].includes(w.status));
   const done = W.filter((w) => !['requested', 'approved'].includes(w.status));
-  const tabs = `<div class="seg" role="tablist"><button type="button" data-fin="komisi" aria-pressed="${st.finTab === 'komisi'}">Komisi pending (${pend.length})</button><button type="button" data-fin="cair" aria-pressed="${st.finTab === 'cair'}">Tarik saldo (${ws.length})</button><button type="button" data-fin="saldo" aria-pressed="${st.finTab === 'saldo'}">Saldo referral</button></div>`;
+  const tabs = `<div class="seg" role="tablist"><button type="button" data-fin="komisi" aria-pressed="${st.finTab === 'komisi'}">Komisi perlu dicek (${pend.length})</button><button type="button" data-fin="cair" aria-pressed="${st.finTab === 'cair'}">Tarik saldo (${ws.length})</button><button type="button" data-fin="saldo" aria-pressed="${st.finTab === 'saldo'}">Saldo referral</button></div>`;
   let body = '';
   if (st.finTab === 'komisi') body = `<section class="card"><div class="card-head"><h2>Verifikasi komisi</h2><div class="head-actions"><button class="btn btn-1 btn-sm" data-verify="all">Setujui semua (${rp(pend.reduce((s, c) => s + c.amount, 0))})</button></div></div>
     <div class="tbl-wrap"><table><thead><tr><th>Peserta</th><th>Referral</th><th>Selesai</th><th class="r">Komisi</th><th></th></tr></thead><tbody>
     ${pend.map((c) => `<tr><td>${esc(pById(c.pid).name)}</td><td>${esc(refName(c.ref))}</td><td class="num">${fmtD(c.at)}</td><td class="r num"><b>${rp(c.amount)}</b></td><td class="r"><div class="head-actions" style="justify-content:flex-end"><button class="btn btn-1 btn-sm" data-verify="${c.id}">Setujui</button><button class="btn btn-3 btn-sm" data-void="${c.id}">Batalkan</button></div></td></tr>`).join('') || '<tr><td colspan="5" class="empty">Semua komisi sudah diverifikasi.</td></tr>'}
-    </tbody></table></div><div class="card-pad small muted">Komisi baru masuk saldo referral setelah disetujui. Komisi yang sudah disetujui tidak bisa dibatalkan, karena mungkin sudah dicairkan.</div></section>`;
+    </tbody></table></div><div class="card-pad small muted">Komisi baru masuk saldo referral setelah disetujui. Komisi yang sudah disetujui tidak bisa dibatalkan, karena mungkin sudah ditarik.</div></section>`;
   if (st.finTab === 'cair') body = `<section class="card"><div class="card-head"><h2>Permintaan tarik saldo</h2></div><div class="list">
-    ${ws.map((w) => `<div class="row"><div><b class="num">${rp(w.amount)}</b> · ${esc(refName(w.ref))}<div class="meta"><span>Diajukan ${fmtD(w.at)}</span><span>${esc(w.payout.method)} ${esc(w.payout.account)} a.n. ${esc(w.payout.name)}</span>${badge(WST[w.status])}<span>Saldo setelah ini: ${rp(wallet(w.ref).available)}</span></div></div>
-      <div class="head-actions">${w.status === 'requested' ? `<button class="btn btn-1 btn-sm" data-wok="${w.id}">Setujui</button><button class="btn btn-3 btn-sm" data-wno="${w.id}">Tolak</button>` : `<input class="input" data-wref="${w.id}" placeholder="No. referensi transfer" style="width:192px"><button class="btn btn-2 btn-sm" data-wpaid="${w.id}">Tandai sudah ditransfer</button><button class="btn btn-3 btn-sm" data-wno="${w.id}">Tolak</button>`}</div></div>`).join('') || '<div class="empty">Tidak ada permintaan yang menunggu.</div>'}
-    </div><div class="card-pad"><div class="note small">Tandai <b>sudah ditransfer</b> hanya setelah uangnya benar-benar dikirim. Isi nomor referensi atau unggah bukti; referral bisa melihatnya di menu Saldo.</div></div></section>
+    ${ws.map((w) => `<div class="row"><div><b class="num">${rp(w.amount)}</b> untuk ${esc(refName(w.ref))} <span class="mono">${refNo(w)}</span><div class="meta"><span>Diajukan ${fmtD(w.at)}</span><span>${esc(w.payout.method)} ${esc(w.payout.account)} a.n. ${esc(w.payout.name)}</span>${badge(WST[w.status])}<span>Saldo setelah ini: ${rp(wallet(w.ref).available)}</span></div>${st.wRejectOpen === w.id ? `<div class="pw" style="margin-top:var(--s2)"><input class="input" id="wReason" placeholder="Alasan penolakan (dibaca referral)"><button class="btn btn-3" data-wno="${w.id}">Kirim penolakan</button></div>` : ''}</div>
+      <div class="head-actions">${w.status === 'requested' ? `<button class="btn btn-1 btn-sm" data-wok="${w.id}">Setujui</button><button class="btn btn-3 btn-sm" data-wnoopen="${w.id}">Tolak…</button>` : `<input class="input" data-wref="${w.id}" placeholder="No. referensi transfer" style="width:192px"><button class="btn btn-2 btn-sm" data-wpaid="${w.id}">Tandai sudah ditransfer</button><button class="btn btn-3 btn-sm" data-wnoopen="${w.id}">Tolak…</button>`}</div></div>`).join('') || '<div class="empty">Tidak ada permintaan yang menunggu.</div>'}
+    </div><div class="card-pad"><div class="note">Tandai sudah ditransfer hanya setelah uangnya benar-benar dikirim. Isi nomor referensi atau unggah bukti; referral bisa melihatnya di menu Saldo.</div></div></section>
     <section class="card"><div class="card-head"><h2>Riwayat</h2></div><div class="tbl-wrap"><table><thead><tr><th>Diajukan</th><th>Referral</th><th class="r">Nominal</th><th>Status</th><th>Referensi</th></tr></thead><tbody>
     ${done.map((w) => `<tr><td class="num">${fmtD(w.at)}</td><td>${esc(refName(w.ref))}</td><td class="r num">${rp(w.amount)}</td><td>${badge(WST[w.status])}</td><td class="mono small">${esc(w.reference || w.note || '-')}</td></tr>`).join('')}</tbody></table></div></section>`;
-  if (st.finTab === 'saldo') body = `<section class="card"><div class="tbl-wrap"><table><thead><tr><th>Referral</th><th class="r">Total komisi</th><th class="r">Pending</th><th class="r">Diproses</th><th class="r">Ditarik</th><th class="r">Tersedia</th><th>Rekening</th></tr></thead><tbody>
+  if (st.finTab === 'saldo') body = `<section class="card"><div class="tbl-wrap"><table><thead><tr><th>Referral</th><th class="r">Total komisi</th><th class="r">Sedang dicek</th><th class="r">Diproses</th><th class="r">Ditarik</th><th class="r">Tersedia</th><th>Rekening</th></tr></thead><tbody>
     ${REF.map((r) => { const w = wallet(r.id); return `<tr><td><div class="who"><b>${esc(r.name)}</b><small class="mono">@${esc(r.username)}</small></div></td><td class="r num">${rp(w.total)}</td><td class="r num">${rp(w.pending)}</td><td class="r num">${rp(w.onHold)}</td><td class="r num">${rp(w.withdrawn)}</td><td class="r num"><b>${rp(w.available)}</b></td><td>${r.payout ? esc(r.payout.method + ' ' + r.payout.account) : '<span class="muted">Belum diisi</span>'}</td></tr>`; }).join('')}</tbody></table></div></section>`;
-  return head('Uang', 'Komisi dan tarik saldo referral', 'Semua perubahan saldo dicek di server: tidak bisa menarik melebihi saldo, dan saldo yang sedang ditarik ditahan.', tabs) + body;
+  return head('Uang', 'Komisi dan tarik saldo referral', 'Referral tidak bisa menarik melebihi saldonya. Uang yang sedang ditarik ditahan sampai Anda menandainya sudah ditransfer.', tabs) + body;
 }
 function vLaporan() {
   const from = addDays(TODAY, -st.rptDays + 1);
@@ -1036,14 +1048,14 @@ function vLaporan() {
     `<div class="seg" role="group" aria-label="Rentang">${[7, 14, 30].map((n) => `<button type="button" data-rpt="${n}" aria-pressed="${st.rptDays === n}">${n} hari</button>`).join('')}</div><button class="btn btn-3" id="csv">Salin CSV</button>`) + `
   <div class="kpis">
     <div class="kpi"><span class="label">Pencapaian target</span><span class="v">${tot.t ? Math.round(100 * tot.c / tot.t) : 0}%</span><span class="s">${tot.c} / ${tot.t}</span></div>
-    <div class="kpi okk"><span class="label">Tingkat konfirmasi</span><span class="v">${tot.ans ? Math.round(100 * tot.y / tot.ans) : 0}%</span><span class="s">Bisa hadir / sudah menjawab</span></div>
+    <div class="kpi"><span class="label">Tingkat konfirmasi</span><span class="v">${tot.ans ? Math.round(100 * tot.y / tot.ans) : 0}%</span><span class="s">Bisa hadir / sudah menjawab</span></div>
     <div class="kpi"><span class="label">Dijadwal ulang</span><span class="v">${tot.mv}</span><span class="s">Dipindah ke tanggal lain</span></div>
-    <div class="kpi hi"><span class="label">Komisi</span><span class="v" style="font-size:var(--t-title)">${rp(rank.reduce((s, r) => s + r.comm, 0))}</span><span class="s">Peserta masuk di rentang ini</span></div>
+    <div class="kpi"><span class="label">Komisi</span><span class="v" style="font-size:var(--t-title)">${rp(rank.reduce((s, r) => s + r.comm, 0))}</span><span class="s">Peserta masuk di rentang ini</span></div>
   </div>
   <section class="card"><div class="card-head"><h2>Selesai per hari vs target</h2><span class="legend"><span><i style="background:var(--teal)"></i>Selesai</span><span><i style="background:var(--line)"></i>Target</span></span></div>
     <div class="card-pad" style="overflow-x:auto"><svg viewBox="0 0 ${days.length * 34 + 40} 170" style="width:100%;min-width:${days.length * 22}px;height:auto" role="img" aria-label="Grafik selesai per hari">
-      ${[0, 10, 20].map((v) => `<line x1="30" x2="${days.length * 34 + 36}" y1="${140 - v / maxC * 120}" y2="${140 - v / maxC * 120}" stroke="var(--line-soft)" stroke-dasharray="4 4"/><text x="24" y="${144 - v / maxC * 120}" text-anchor="end" font-size="10" fill="var(--text-3)" font-family="Overpass Mono, monospace">${v}</text>`).join('')}
-      ${days.map((d, i) => { const x = 36 + i * 34, h = d.completed / maxC * 120, th = d.target / maxC * 120; return `<rect x="${x}" y="${140 - th}" width="24" height="${th}" fill="none" stroke="var(--line)" stroke-dasharray="3 3"/><rect x="${x}" y="${140 - h}" width="24" height="${h}" fill="${d.day === TODAY ? 'var(--orange)' : 'var(--teal)'}" rx="2"/><text x="${x + 12}" y="158" text-anchor="middle" font-size="10" fill="var(--text-3)" font-family="Overpass Mono, monospace">${Number(d.day.slice(8))}</text>`; }).join('')}
+      ${[0, 10, 20].map((v) => `<line x1="30" x2="${days.length * 34 + 36}" y1="${140 - v / maxC * 120}" y2="${140 - v / maxC * 120}" stroke="var(--line-soft)" stroke-dasharray="4 4"/><text x="24" y="${144 - v / maxC * 120}" text-anchor="end" font-size="12" fill="var(--text-2)" font-family="Overpass Mono, monospace">${v}</text>`).join('')}
+      ${days.map((d, i) => { const x = 36 + i * 34, h = d.completed / maxC * 120, th = d.target / maxC * 120; return `<rect x="${x}" y="${140 - th}" width="24" height="${th}" fill="none" stroke="var(--line)" stroke-dasharray="3 3"/><rect x="${x}" y="${140 - h}" width="24" height="${h}" fill="${d.day === TODAY ? 'var(--orange)' : 'var(--teal)'}" rx="2"/><text x="${x + 12}" y="158" text-anchor="middle" font-size="12" fill="var(--text-2)" font-family="Overpass Mono, monospace">${Number(d.day.slice(8))}</text>`; }).join('')}
     </svg></div></section>
   <section class="card"><div class="card-head"><h2>Peringkat referral</h2></div><div class="tbl-wrap"><table><thead><tr><th>#</th><th>Referral</th><th class="r">Peserta</th><th class="r">Selesai</th><th class="r">Ditolak</th><th class="r">Konversi</th><th class="r">Komisi</th><th class="r">Ditransfer</th></tr></thead><tbody>
     ${rank.map((r, i) => `<tr><td class="mono">${i + 1}</td><td><b>${esc(r.name)}</b></td><td class="r num">${r.n}</td><td class="r num">${r.done}</td><td class="r num">${r.rej}</td><td class="r num">${r.conv.toFixed(1)}%</td><td class="r num">${rp(r.comm)}</td><td class="r num">${rp(r.paid)}</td></tr>`).join('')}</tbody></table></div></section>
@@ -1088,7 +1100,7 @@ function render(keepFocus) {
   renderNav();
   const v = document.getElementById('view');
   v.className = st.role === 'referral' || st.role === 'guest' ? 'wrap narrow' : 'wrap';
-  v.innerHTML = VIEW_FN[st.view]();
+  v.innerHTML = (navigator.onLine === false && st.role !== 'guest' ? `<div class="offline note ic" role="status">${icon('i-wifi-off')}<span>Tidak tersambung internet. Yang sudah Anda ketik tetap tersimpan; kirim lagi setelah tersambung.</span></div>` : '') + VIEW_FN[st.view]();
   paintOverlay();
   if (id) { const el = document.getElementById(id); if (el) { el.focus(); try { el.setSelectionRange(pos, pos); } catch (_) {} } }
 }
@@ -1104,8 +1116,24 @@ const run = (fn, ok, undoable = true) => {
   try { const r = fn(); render(); if (ok) toast(typeof ok === 'function' ? ok(r) : ok, false, snap && (() => { restore(snap); render(); toast('Dibatalkan'); })); }
   catch (e) { toast(e.message, true); }
 };
-function go(view) { st.view = view; st.sel.clear(); st.rejectOpen = false; st.drawer = null; if (view !== 'daftar') st.justSent = null; if (view !== 'saldo') { st.wReceipt = null; st.wConfirm = false; } render(); window.scrollTo(0, 0); }
-function setRole(r) { st.role = r; st.view = VIEWS[r][0][0]; st.q = ''; st.fStatus = st.fRef = st.fConf = st.fDay = ''; st.sel.clear(); st.drawer = null; st.toast = null; render(); window.scrollTo(0, 0); }
+function openDrawer(pid) { st.drawer = pid; paintOverlay(); nav(`${st.view}-detail`); document.querySelector('.drawer [data-close]')?.focus(); }
+function closeDrawer(fromHistory) { if (!st.drawer) return; st.drawer = null; paintOverlay(); if (!fromHistory) { try { if (location.hash.endsWith('-detail')) history.back(); } catch (_) {} } }
+// Android Back: every screen and the detail panel get a history entry
+function nav(hash, replace) { try { const u = '#' + hash; if (location.hash === u) return; replace ? history.replaceState(null, '', u) : history.pushState(null, '', u); } catch (_) {} }
+window.addEventListener('popstate', () => {
+  const h = (location.hash || '').slice(1), v = h.replace(/-detail$/, '');
+  if (!h.endsWith('-detail') && st.drawer) closeDrawer(true);
+  const ok = VIEWS[st.role].some(([k]) => k === v) || (v === 'daftar' && st.role === 'referral');
+  if (ok && v !== st.view) { st.view = v; st.justSent = null; render(); window.scrollTo(0, 0); }
+});
+// a short "Mengirim…" state so the press is acknowledged, held at least 500 ms
+function busy(btn, label, done) { if (!btn) { done(); return; } btn.disabled = true; btn.textContent = label; setTimeout(done, 600); }
+const DRAFT_KEY = 'cp-ref-draft';
+function saveDraft() { try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...st.regDraft, time: st.regTime })); } catch (_) {} }
+function clearDraft() { try { localStorage.removeItem(DRAFT_KEY); } catch (_) {} }
+function loadDraft() { try { const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); if (d && (d.name || d.wa || d.email)) { st.regTime = d.time || ''; delete d.time; st.regDraft = d; return true; } } catch (_) {} return false; }
+function go(view, replace) { nav(view, replace); st.view = view; st.sel.clear(); st.rejectOpen = false; st.drawer = null; if (view !== 'daftar') st.justSent = null; if (view !== 'saldo') { st.wReceipt = null; st.wConfirm = false; } render(); window.scrollTo(0, 0); }
+function setRole(r) { st.role = r; st.view = VIEWS[r][0][0]; nav(st.view, true); st.q = ''; st.fStatus = st.fRef = st.fConf = st.fDay = ''; st.sel.clear(); st.drawer = null; st.toast = null; render(); window.scrollTo(0, 0); }
 const pick = (e) => { if (e.target.value === 'referral') ME = 'r1'; setRole(e.target.value); };
 document.getElementById('role').addEventListener('change', pick);
 document.getElementById('role-m').addEventListener('change', pick);
@@ -1117,29 +1145,30 @@ document.addEventListener('click', (ev) => {
   const d = t.dataset;
   if (t.id === 'undoBtn') { const u = st.toast?.undo; st.toast = null; if (u) u(); return; }
   if (d.go) { go(d.go); return; }
-  if (d.close) { st.drawer = null; paintOverlay(); return; }
+  if (d.close) { closeDrawer(); return; }
   // sign up / log in
   if (d.auth) { st.authTab = d.auth; st.authErr = {}; st.chk = {}; st.forgot = false; render(); return; }
   if (t.id === 'showPw') { st.aPw = document.getElementById('a-pw').value; st.showPw = !st.showPw; render(); document.getElementById('showPw').focus(); return; }
   if (t.id === 'forgot') { st.forgot = !st.forgot; render(); return; }
   // referral portal
-  if (d.fix) { const p = pById(d.fix); st.regDraft = { name: p.name, wa: p.wa, email: p.email, cloud: p.cloud, notes: p.notes, date: p.availDate && p.availDate >= TODAY ? p.availDate : '', consent: false }; st.regTime = p.availTime || ''; st.regErr = {}; go('daftar'); toast(`Data ${p.name} sudah terisi. Perbaiki yang salah, lalu kirim lagi.`); return; }
-  if (d.time) { st.regDraft = readReg(); st.regTime = st.regTime === d.time ? '' : d.time; render(); return; }
-  if (t.id === 'again') { st.justSent = null; st.regDraft = {}; st.regTime = ''; render(); document.getElementById('f-name').focus(); return; }
+  if (d.fix) { const p = pById(d.fix); st.fixOf = p.id; st.regDraft = { name: p.name, wa: p.wa, email: p.email, cloud: p.cloud, notes: p.notes, date: p.availDate && p.availDate >= TODAY ? p.availDate : '', consent: false }; st.regTime = p.availTime || ''; st.regErr = {}; go('daftar'); toast(`Data ${p.name} sudah terisi. Perbaiki yang salah, lalu kirim lagi.`); return; }
+  if (d.time) { st.regDraft = readReg(); st.regTime = st.regTime === d.time ? '' : d.time; saveDraft(); render(); return; }
+  if (t.id === 'again') { st.justSent = null; st.regDraft = {}; st.regTime = ''; clearDraft(); render(); document.getElementById('f-name').focus(); return; }
   if (d.pf) { st.pFilter = d.pf; render(); return; }
+  if (d.pfgo) { st.pFilter = d.pfgo; go('peserta'); return; }
   if (d.amt) { st.wAmount = Number(d.amt); st.wCustom = ''; st.wConfirm = false; render(); return; }
   if (t.id === 'w-req') { st.wConfirm = true; render(); document.getElementById('w-yes')?.focus(); return; }
   if (t.id === 'w-no') { st.wConfirm = false; render(); return; }
-  if (t.id === 'w-yes') { const amt = st.wCustom ? Number(st.wCustom) : st.wAmount; try { requestWithdrawal(ME, amt); st.wReceipt = W[0].id; st.wConfirm = false; st.wAmount = null; st.wCustom = ''; render(); window.scrollTo(0, 0); } catch (e) { toast(e.message, true); } return; }
+  if (t.id === 'w-yes') { const amt = st.wCustom ? Number(st.wCustom) : st.wAmount; try { requestWithdrawal(ME, amt); busy(t, 'Mengirim…', () => { st.wReceipt = W[0].id; st.wConfirm = false; st.wAmount = null; st.wCustom = ''; render(); window.scrollTo(0, 0); }); return; } catch (e) { toast(e.message, true); } return; }
   if (d.wcancel) { const w = W.find((x) => x.id === d.wcancel); if (w.status !== 'requested') { toast('Admin sudah memproses permintaan ini, jadi tidak bisa dibatalkan.', true); return; } w.status = 'cancelled'; st.wReceipt = null; render(); toast(`Dibatalkan. ${rp(w.amount)} kembali ke saldo.`); return; }
   if (t.id === 'payEdit') { st.editPayout = true; st.payErr = {}; render(); document.getElementById('pay-m').focus(); return; }
   if (t.id === 'payCancel') { st.editPayout = false; render(); return; }
-  if (d.notif !== undefined) { const n = N[Number(d.notif)]; n.read = true; go(notifTarget(n.text)); return; }
+  if (d.notif !== undefined) { const n = N[Number(d.notif)]; n.read = true; go(notifTarget(n.text)); if (n.pid && pById(n.pid) && (st.role === 'admin' || pById(n.pid).ref === ME)) openDrawer(n.pid); return; }
   if (t.id === 'readAll') { const to = st.role === 'referral' ? ME : 'admin'; N.filter((n) => n.to === to).forEach((n) => (n.read = true)); render(); return; }
   // ERP
   if (d.sel !== undefined && t.matches('input')) { ev.stopPropagation(); t.checked ? st.sel.add(d.sel) : st.sel.delete(d.sel); render(); return; }
   if (t.id === 'selAll') { const shown = filtered().slice(0, 50); t.checked ? shown.forEach((p) => st.sel.add(p.id)) : shown.forEach((p) => st.sel.delete(p.id)); render(); return; }
-  if (d.open && !ev.target.closest('input')) { st.drawer = d.open; paintOverlay(); document.querySelector('.drawer [data-close]')?.focus(); return; }
+  if (d.open && !ev.target.closest('input')) { openDrawer(d.open); return; }
   if (d.day && st.role === 'admin') { st.calDay = d.day; st.calMonth = d.day.slice(0, 7); go('jadwal'); return; }
   if (d.day) { if (d.day >= TODAY && d.day <= addDays(TODAY, 2)) st.h1Day = d.day; go('h1'); return; }
   if (d.bulk) {
@@ -1165,7 +1194,9 @@ document.addEventListener('click', (ev) => {
   if (d.verify) { const ids = d.verify === 'all' ? C.filter((c) => c.status === 'pending').map((c) => c.id) : [d.verify]; run(() => verify(ids, true), (n) => `${n} komisi disetujui, masuk saldo referral`); return; }
   if (d.void) { run(() => verify([d.void], false), 'Komisi dibatalkan'); return; }
   if (d.wok) { run(() => decideW(d.wok, true), 'Disetujui. Transfer, lalu tandai sudah ditransfer'); return; }
-  if (d.wno) { run(() => decideW(d.wno, false, 'Rekening tidak sesuai'), 'Ditolak, saldo dikembalikan ke referral'); return; }
+  if (d.wnoopen) { st.wRejectOpen = d.wnoopen; render(); document.getElementById('wReason')?.focus(); return; }
+  if (d.wno) { const why = document.getElementById('wReason')?.value || ''; run(() => decideW(d.wno, false, why), () => { st.wRejectOpen = null; return 'Ditolak, saldo dikembalikan ke referral'; }); return; }
+  if (d.savenote) { const inp = document.querySelector(`[data-note="${d.savenote}"]`), v = inp?.value.trim(); if (!v) { inp?.focus(); toast('Tulis catatannya dulu', true); return; } NOTES.push({ pid: d.savenote, text: v, at: TODAY }); render(); toast('Catatan disimpan'); return; }
   if (d.wpaid) { const v = document.querySelector(`[data-wref="${d.wpaid}"]`).value; run(() => markPaid(d.wpaid, v), 'Ditandai sudah ditransfer', false); return; }
   if (d.rpt) { st.rptDays = Number(d.rpt); render(); return; }
   if (t.id === 'csv') {
@@ -1184,14 +1215,15 @@ document.addEventListener('input', (ev) => {
   if (t.id === 'q') { st.q = t.value; st.sel.clear(); render(true); }
   if (t.id === 'w-custom') { st.wCustom = t.value.replace(/\D/g, ''); st.wAmount = null; st.wConfirm = false; render(true); const el = document.getElementById('w-custom'); el.setSelectionRange(el.value.length, el.value.length); }
   if (t.id === 'readyTime') st.readyTime = t.value;
-  if (t.id === 'a-pw') st.aPw = t.value;
+  if (t.id === 'a-pw') { st.aPw = t.value; if (st.authErr['a-pw'] && t.value.length >= 6) { delete st.authErr['a-pw']; render(true); } }
   if (t.id === 'a-id') st.aId = t.value;
   if (t.id === 'a-user' || t.id === 'a-wa') { if (t.id === 'a-user') st.aUser = t.value; else st.aWa = t.value; delete st.authErr[t.id]; st.chk = signupCheck(st.aUser, st.aWa); render(true); }
-  if (t.id && t.id.startsWith('f-') && st.regErr[t.id]) { st.regDraft = readReg(); delete st.regErr[t.id]; render(true); }
+  if (t.id && t.id.startsWith('f-')) { st.regDraft = readReg(); saveDraft(); if (st.regErr[t.id]) { delete st.regErr[t.id]; render(true); } }
 });
 document.addEventListener('change', (ev) => {
   const t = ev.target;
   if (['fStatus', 'fRef', 'fConf', 'fDay'].includes(t.id)) { st[t.id] = t.value; st.sel.clear(); render(); }
+  if (t.id === 'pay-m') { st.payBank = t.value; delete st.payErr['pay-m']; render(); if (t.value === 'lain') document.getElementById('pay-o')?.focus(); }
   if (t.id === 'f-consent' && st.regErr['f-consent']) { st.regDraft = readReg(); delete st.regErr['f-consent']; render(); }
   if (t.dataset.moveto && t.value) { const pid = t.dataset.moveto, day = t.value; run(() => schedule(day, [pid], null, false), `Dipindah ke ${fmtDL(day)}`); }
 });
@@ -1215,22 +1247,27 @@ document.addEventListener('submit', (ev) => {
     if (!f.email.trim()) err['f-email'] = 'Isi email peserta.'; else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim())) err['f-email'] = 'Email belum benar. Contoh: nama@gmail.com.';
     if (!f.consent) err['f-consent'] = 'Centang dulu kalau peserta sudah setuju dihubungi.';
     if (!Object.keys(err).length) {
-      try { const p = submitParticipant(ME, { ...f, availTime: st.regTime, consent: true }); st.justSent = p.id; st.regDraft = {}; st.regErr = {}; st.regTime = ''; render(); window.scrollTo(0, 0); return; }
+      try { const p = submitParticipant(ME, { ...f, availTime: st.regTime, consent: true }); if (st.fixOf) { const old = pById(st.fixOf); if (old) { old.replacedBy = p.id; ev(p, TODAY, `Kiriman ulang dari data yang ditolak ${fmtD(old.enteredOn)}`); } st.fixOf = null; } st.regDraft = {}; st.regErr = {}; st.regTime = ''; clearDraft(); busy(ev.submitter || ev.target.querySelector('[type=submit]'), 'Mengirim…', () => { st.justSent = p.id; render(); window.scrollTo(0, 0); }); return; }
       catch (e) { if (/WhatsApp/.test(e.message)) err['f-wa'] = 'Nomor ini sudah didaftarkan sebelumnya, oleh Anda atau referral lain.'; else if (/Email/.test(e.message)) err['f-email'] = 'Email ini sudah didaftarkan sebelumnya, oleh Anda atau referral lain.'; else err['f-name'] = e.message; }
     }
     st.regDraft = f; st.regErr = err; render(); focusFirstError();
     return;
   }
   if (id === 'payForm') {
-    const v = (k) => document.getElementById(k).value.trim(), err = {};
-    if (!v('pay-m')) err['pay-m'] = 'Isi nama bank atau e-wallet.';
+    const v = (k) => (document.getElementById(k)?.value || '').trim(), err = {};
+    if (!v('pay-m')) err['pay-m'] = 'Pilih bank atau e-wallet.';
+    if (v('pay-m') === 'lain' && !v('pay-o')) err['pay-o'] = 'Tulis nama bank atau e-wallet.';
     if (!v('pay-a')) err['pay-a'] = 'Isi nomor rekening atau nomor HP.';
     if (!v('pay-n')) err['pay-n'] = 'Isi nama pemilik rekening.';
     if (Object.keys(err).length) { st.payErr = err; render(); focusFirstError(); return; }
-    REF.find((x) => x.id === ME).payout = { method: v('pay-m'), account: v('pay-a'), name: v('pay-n') }; st.editPayout = false; st.payErr = {}; render(); toast('Rekening disimpan');
+    REF.find((x) => x.id === ME).payout = { method: v('pay-m') === 'lain' ? v('pay-o') : v('pay-m'), account: v('pay-a'), name: v('pay-n') }; st.editPayout = false; st.payErr = {}; st.payBank = ''; render(); toast('Rekening disimpan');
   }
 });
-document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && st.drawer) { st.drawer = null; paintOverlay(); } });
+document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && st.drawer) closeDrawer(); });
+window.addEventListener('offline', () => render()); window.addEventListener('online', () => render());
+document.documentElement.lang = 'id';
+loadDraft();
+nav(st.view, true);
 render();
 })();
 </script>
