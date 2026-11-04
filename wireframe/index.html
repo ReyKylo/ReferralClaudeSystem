@@ -1246,6 +1246,8 @@ document.addEventListener('submit', (evt) => {
     const wa = normWa(f.wa); if (!f.wa.trim()) err['f-wa'] = 'Isi nomor WhatsApp peserta.'; else if (wa.length < 10 || wa.length > 15) err['f-wa'] = 'Nomor belum lengkap. Contoh: 0812-3456-7890.';
     if (!f.email.trim()) err['f-email'] = 'Isi email peserta.'; else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim())) err['f-email'] = 'Email belum benar. Contoh: nama@gmail.com.';
     if (!f.consent) err['f-consent'] = 'Centang dulu kalau peserta sudah setuju dihubungi.';
+    const old = st.fixOf && pById(st.fixOf);
+    if (old && !err['f-wa'] && /whatsapp/i.test(old.reason) && normWa(f.wa) === normWa(old.wa)) err['f-wa'] = `Nomor ini yang tadi ditolak (${old.reason.toLowerCase()}). Ganti dengan nomor WhatsApp yang aktif.`;
     if (!Object.keys(err).length) {
       try { const p = submitParticipant(ME, { ...f, availTime: st.regTime, consent: true }); if (st.fixOf) { const old = pById(st.fixOf); if (old) { old.replacedBy = p.id; ev(p, TODAY, `Kiriman ulang dari data yang ditolak ${fmtD(old.enteredOn)}`); } st.fixOf = null; } st.regDraft = {}; st.regErr = {}; st.regTime = ''; clearDraft(); busy(evt.submitter || evt.target.querySelector('[type=submit]'), 'Mengirim…', () => { st.justSent = p.id; render(); window.scrollTo(0, 0); }); return; }
       catch (e) { if (/WhatsApp/.test(e.message)) err['f-wa'] = 'Nomor ini sudah didaftarkan sebelumnya, oleh Anda atau referral lain.'; else if (/Email/.test(e.message)) err['f-email'] = 'Email ini sudah didaftarkan sebelumnya, oleh Anda atau referral lain.'; else { console.error(e); toast('Pendaftaran belum terkirim. Coba lagi sebentar lagi.', true); } }

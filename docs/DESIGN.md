@@ -107,3 +107,27 @@ Aturan lainnya:
 | Gagal memuat / offline | "Tidak tersambung. Periksa internet Anda, lalu coba lagi." dengan tombol Coba lagi. Isi form yang sedang diketik tetap tersimpan. Belum ada di wireframe |
 | Nonaktif | Referral yang dinonaktifkan melihat "Akun Anda sedang dinonaktifkan. Hubungi admin." dengan tombol chat admin. Belum ada di wireframe |
 | Nama panjang | Teks turun ke baris baru, tidak dipotong |
+
+## Hasil audit (deslop, auditor independen)
+
+| | Sebelum | Iterasi 1 | Iterasi 2 | Akhir |
+|---|---|---|---|---|
+| Scanner | 53 | 100 | 100 | 100 |
+| Slop Score (auditor) | – | 66,5 | 91 | **96** |
+| Usability (Nielsen) | – | 27/40 | 29/40 | **30/40** |
+| P0 / P1 | – | 0 / 4 | 1 / 0 | **0 / 0** |
+| Gate | – | Gagal | Gagal | **Lulus** |
+
+Usability lulus tanpa sisa ruang. Yang paling murah untuk menaikkannya adalah perkiraan kapan uang tarik saldo masuk.
+Angka itu menunggu keputusan owner, dan tidak boleh dikarang.
+
+Sisa catatan kecil (P3):
+- Lebar inline satu-satu (170/192/240 px).
+- Huruf mono di baris keterangan ERP.
+- Kotak legenda mint di atas putih.
+- Kotak-kotak di halaman Saldo masih bertumpuk.
+- 7 kartu KPI di "Hari ini". Ini memang diminta PRD.
+- Baris H-1 yang padat.
+
+Pelajaran: scanner memberi 100, tapi auditor menemukan 4 masalah alur dan 1 crash saat runtime. Setiap perbaikan alur
+harus diuji dengan menjalankan alurnya, misalnya kirim ulang setelah "Perbaiki", tidak cukup dengan scan.
