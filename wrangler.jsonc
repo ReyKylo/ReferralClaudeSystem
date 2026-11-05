@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Static assets only (no Worker code): the portal is the out/ folder from `next build`.
+  "name": "referral-portal",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./out",
+    "not_found_handling": "404-page",
+    "html_handling": "auto-trailing-slash"
+  },
+  // tampilresmi.com is already in this Cloudflare account (the ERP runs on claudekita.tampilresmi.com).
+  "routes": [{ "pattern": "referral.tampilresmi.com", "custom_domain": true }],
+  "workers_dev": true
+}

@@ -144,6 +144,11 @@ select t.expect_error($$select ref.mark_withdrawal_paid((select id from ref.with
 select ref.mark_withdrawal_paid((select id from ref.withdrawals), 'BCA TRX 0001');
 select t.eq((select count(*) from ref.audit_log where action like 'withdrawal.%'), 3::bigint, 'withdrawal audit trail');
 select t.eq((select request_no from ref.withdrawal_items), 'TS-0001', 'request number');
+reset role;
+select set_config('request.jwt.claim.sub', :'ra', false); set role authenticated;
+select t.eq((select request_no from ref.withdrawal_items), 'TS-0001', 'referral sees the same request number as admin');
+reset role;
+select set_config('request.jwt.claim.sub', :'owner', false); set role authenticated;
 select t.eq((select status::text from ref.withdrawal_items), 'paid', 'withdrawal item status');
 select t.eq((select available from ref.referrer_overview where name = 'Gipong'), 0::bigint, 'referrer overview wallet');
 select t.eq(jsonb_array_length(ref.referrer_performance(erp.today() - 30, erp.today())), 2, 'referrer report rows');
