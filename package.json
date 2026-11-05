@@ -10,7 +10,7 @@
     "test:e2e": "playwright test",
     "test:sql": "bash tests/sql/run.sh",
     "dev:mock": "node tests/e2e/mock-supabase.mjs",
-    "deploy": "next build && wrangler deploy"
+    "deploy": "wrangler deploy"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",

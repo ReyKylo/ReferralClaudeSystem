@@ -1,14 +1,17 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  // Static assets only (no Worker code): the portal is the out/ folder from `next build`.
-  "name": "referral-portal",
+  // Must match the Worker name in the Cloudflare dashboard (Workers Builds checks this).
+  "name": "referralclaudesystem",
   "compatibility_date": "2026-09-01",
+  // `wrangler deploy` / `wrangler versions upload` build the static export first, so Workers Builds needs no build command.
+  "build": { "command": "npm run build" },
+  // Static assets only (no Worker code): the portal is the out/ folder from `next build`.
+  // The domain referral.tampilresmi.com is attached in the dashboard (Settings > Domains & Routes), like the ERP's.
   "assets": {
     "directory": "./out",
     "not_found_handling": "404-page",
     "html_handling": "auto-trailing-slash"
   },
-  // tampilresmi.com is already in this Cloudflare account (the ERP runs on claudekita.tampilresmi.com).
-  "routes": [{ "pattern": "referral.tampilresmi.com", "custom_domain": true }],
-  "workers_dev": true
+  "workers_dev": true,
+  "observability": { "enabled": true }
 }

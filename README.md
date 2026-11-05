@@ -9,7 +9,7 @@ referral. Semuanya memakai satu database dengan ERP (Supabase, schema `ref`).
 - `app/`, `components/`, `lib/` berisi portal referral (Next.js, static export) untuk https://referral.tampilresmi.com:
   daftar dan masuk pakai username atau nomor WhatsApp, daftarkan peserta, lihat status, saldo dan tarik saldo lewat
   WhatsApp admin, notifikasi, dan link ajak teman. Admin dan tim operasional memakai modul Referral di ERP.
-- `docs/SETUP.md` berisi langkah sekali pasang: setting Supabase Auth, secret Cloudflare, dan deploy.
+- `docs/SETUP.md` berisi langkah sekali pasang: setting Supabase Auth, domain Cloudflare, dan deploy.
 - `tests/e2e/` berisi Supabase tiruan dan tes klik portal (Playwright) di layar HP dan desktop.
 
 - `wireframe/index.html` berisi wireframe interaktif dengan tampilan CodePave. Dibuka di layar Daftar/Masuk; pilih "Lihat sebagai" untuk berganti ke portal referral, admin, atau tim operasional. Datanya contoh dan tidak tersimpan.
@@ -37,4 +37,4 @@ npm run typecheck
 npm run test:e2e
 ```
 
-Push ke `main` men-deploy portal ke Cloudflare (`.github/workflows/deploy.yml`). Lihat `docs/SETUP.md`.
+Push ke `main` di-deploy otomatis oleh Cloudflare Workers Builds (Worker `referralclaudesystem`). Lihat `docs/SETUP.md`.

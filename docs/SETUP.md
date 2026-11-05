@@ -3,7 +3,7 @@
 Portal ini halaman statis (Next.js export) yang disajikan Cloudflare Workers. Datanya langsung dari Supabase (schema `ref`),
 dan yang boleh dibaca atau diubah ditentukan RLS dan fungsi SQL. Server sendiri tidak ada.
 
-Ada 3 hal yang dikerjakan sekali saja oleh owner: setting Supabase Auth, secret Cloudflare di GitHub, dan branch utama.
+Ada 3 hal yang dikerjakan sekali saja oleh owner: setting Supabase Auth, domain di Cloudflare, dan branch utama.
 
 ## 1. Supabase: daftar tanpa verifikasi email
 
@@ -41,34 +41,23 @@ update auth.users
 Hasilnya harus `1 row`. Kirim password baru ke nomor WhatsApp yang terdaftar di akun itu (cek dulu di ERP → Referral), dan
 minta referral menggantinya sendiri nanti.
 
-## 2. Cloudflare: secret untuk deploy otomatis
+## 2. Cloudflare: deploy dan domain
 
-Setiap push ke `main` menjalankan `.github/workflows/deploy.yml`: build, lalu `wrangler deploy` ke Worker
-`referral-portal` dengan domain `referral.tampilresmi.com`. Workflow butuh dua secret.
+Repo ini sudah tersambung ke Cloudflare Workers Builds (Worker `referralclaudesystem`), sama seperti ERP. Setiap push ke
+`main` di-build dan di-deploy otomatis oleh Cloudflare. Tidak perlu token atau secret di GitHub. `wrangler.jsonc` menjalankan
+`npm run build` sendiri sebelum deploy, jadi kolom build command di dashboard boleh kosong.
 
-### CLOUDFLARE_ACCOUNT_ID
+Cek setting build sekali:
 
-1. Buka https://dash.cloudflare.com dan pilih akun yang memegang `tampilresmi.com`.
-2. Di menu kiri pilih **Workers & Pages**. **Account ID** ada di panel kanan. Klik untuk menyalin.
+1. Buka https://dash.cloudflare.com → **Workers & Pages** → **referralclaudesystem** → **Settings** → **Build**.
+2. **Production branch**: `main`. **Deploy command**: `npx wrangler deploy`. **Build command**: kosong (atau `npm run build`).
+3. Simpan kalau ada yang diubah.
 
-### CLOUDFLARE_API_TOKEN
+Pasang domain sekali (setelah deploy pertama berhasil):
 
-1. Buka https://dash.cloudflare.com/profile/api-tokens lalu **Create Token**.
-2. Pilih template **Edit Cloudflare Workers** → **Use template**.
-3. **Account Resources**: Include, akun Anda. **Zone Resources**: Include, Specific zone, `tampilresmi.com`.
-4. Tambah satu baris di **Permissions**: Zone → **DNS** → **Edit** (dipakai untuk membuat domain
-   `referral.tampilresmi.com`).
-5. **Continue to summary** → **Create Token**, lalu salin token-nya. Token hanya tampil sekali.
-
-Kalau token yang sama sudah dipakai untuk ERP dan punya izin di atas, boleh dipakai lagi.
-
-### Memasukkan ke GitHub
-
-1. Buka https://github.com/ReyKylo/ReferralClaudeSystem/settings/secrets/actions
-2. **New repository secret**: nama `CLOUDFLARE_API_TOKEN`, isi token tadi. Simpan.
-3. **New repository secret**: nama `CLOUDFLARE_ACCOUNT_ID`, isi Account ID. Simpan.
-
-Jangan menaruh token ini di file mana pun di repo. Repo ini publik.
+1. Di Worker yang sama: **Settings** → **Domains & Routes** → **Add** → **Custom domain**.
+2. Isi `referral.tampilresmi.com` → **Add domain**. Cloudflare membuat DNS dan sertifikat HTTPS-nya sendiri
+   (biasanya 1–2 menit, paling lama sekitar 15 menit).
 
 ## 3. GitHub: jadikan `main` branch utama
 
@@ -77,15 +66,8 @@ Jangan menaruh token ini di file mana pun di repo. Repo ini publik.
 
 ## 4. Deploy pertama
 
-Setelah PR portal di-merge ke `main`, workflow **Deploy portal** jalan sendiri. Bisa juga dijalankan manual:
-**Actions → Deploy portal → Run workflow**.
-
-Kalau berhasil, https://referral.tampilresmi.com terbuka dalam 1–2 menit (sertifikat HTTPS kadang butuh sampai 15 menit di
-pemasangan pertama).
-
-Kalau langkah **Deploy to Cloudflare** gagal karena domain, pasang domain lewat dashboard:
-**Workers & Pages → referral-portal → Settings → Domains & Routes → Add → Custom domain** →
-`referral.tampilresmi.com`. Deploy berikutnya tidak perlu langkah ini lagi.
+Merge PR portal ke `main`. Cloudflare membangun dan men-deploy dalam beberapa menit; statusnya ada di
+**Workers & Pages → referralclaudesystem → Deployments**. Setelah domain dipasang, buka https://referral.tampilresmi.com.
 
 ## Menjalankan di komputer sendiri
 
