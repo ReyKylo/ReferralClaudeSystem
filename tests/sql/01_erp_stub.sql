@@ -25,3 +25,22 @@ grant execute on all functions in schema erp to authenticated;
 -- like the real ERP: you only see your own profile (owners/admins see all)
 alter table erp.profiles enable row level security;
 create policy profiles_select on erp.profiles for select to authenticated using (user_id = auth.uid());
+
+-- Used by ref.reveal_participant_password and ref.link_erp_account (same shapes as the real ERP migration).
+create table erp.settings (key text primary key, value jsonb not null);
+insert into erp.settings (key, value) values ('password_reveal_roles', '["owner"]');
+alter table erp.settings enable row level security;
+create policy members_read on erp.settings for select to authenticated using (exists (select 1 from erp.profiles where user_id = auth.uid()));
+grant select on erp.settings to authenticated;
+alter table erp.accounts add column password_secret_id uuid;
+create or replace function erp.my_role() returns erp.user_role language sql stable security definer set search_path = ''
+as $$ select role from erp.profiles where user_id = auth.uid() $$;
+create or replace function erp.set_account_password(p_account_id uuid, p_password text) returns void language plpgsql security definer set search_path = ''
+as $$
+declare v_secret uuid;
+begin
+  if erp.my_role() is null then raise exception 'Tidak punya akses' using errcode = '42501'; end if;
+  if coalesce(p_password, '') = '' then return; end if;
+  v_secret := vault.create_secret(p_password, 'erp_account_' || p_account_id::text, 'Password akun ERP');
+  update erp.accounts set password_secret_id = v_secret where id = p_account_id;
+end $$;

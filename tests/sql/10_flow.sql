@@ -37,7 +37,7 @@ select set_config('request.jwt.claim.sub', :'owner', false); set role authentica
 select t.eq(ref.my_role(), 'admin', 'owner maps to admin');
 select ref.create_referrer('Gipong', '0812-1111-1111', 'gipong@x.id');
 select ref.create_referrer('Zakar', '0812-2222-2222', 'zakar@x.id');
-select t.expect_error($$select ref.create_referrer('X', null, 'staff@x.id')$$, '22023');  -- ERP login cannot be a referral
+select t.expect_error($$select ref.create_referrer('X', '0812-9999-9999', 'staff@x.id')$$, '22023');  -- ERP login cannot be a referral
 reset role;
 
 -- ---------------------------------------------------------------- Phase 1: registration + isolation
@@ -45,11 +45,11 @@ select set_config('request.jwt.claim.sub', :'ra', false); set role authenticated
 select t.eq(ref.my_role(), 'referral', 'referral role');
 select t.eq((select count(*) from erp.accounts), 0::bigint, 'referral sees no ERP data');
 select ref.submit_participant('Peserta ' || i, '0813-0000-00' || lpad(i::text, 2, '0'), 'p' || i || '@mail.id',
-                              'cloud-' || i, null, '10:00', null, true)
+                              'cloud-' || i, null, '10:00', null, true, 'pw123456')
 from generate_series(1, 4) i;
-select t.expect_error($$select ref.submit_participant('Dup', '+62 813 0000 0001', 'other@mail.id', null, null, null, null, true)$$, '23505');
-select t.expect_error($$select ref.submit_participant('Dup', '0813-9999-9999', 'P1@MAIL.ID', null, null, null, null, true)$$, '23505');
-select t.expect_error($$select ref.submit_participant('NoConsent', '0813-9999-9999', 'nc@mail.id', null, null, null, null, false)$$, '22023');
+select t.expect_error($$select ref.submit_participant('Dup', '+62 813 0000 0001', 'other@mail.id', null, null, null, null, true, 'pw123456')$$, '23505');
+select t.expect_error($$select ref.submit_participant('Dup', '0813-9999-9999', 'P1@MAIL.ID', null, null, null, null, true, 'pw123456')$$, '23505');
+select t.expect_error($$select ref.submit_participant('NoConsent', '0813-9999-9999', 'nc@mail.id', null, null, null, null, false, 'pw123456')$$, '22023');
 select t.expect_error($$insert into ref.participants (referrer_id, name, wa, email, consent_wa) values (ref.my_referrer_id(), 'x', '081300000099', 'x@x.id', true)$$, '42501');
 select t.expect_error($$update ref.participants set status = 'approved'$$, '42501');
 select t.expect_error($$select ref.review_participants(array(select id from ref.participants), 'approve')$$, '42501');
@@ -113,7 +113,7 @@ reset role;
 
 -- ---------------------------------------------------------------- Phase 3: wallet
 select set_config('request.jwt.claim.sub', :'ra', false); set role authenticated;
-select t.eq((select pending_commission from ref.wallets), 50000::bigint, 'pending 50rb');
+select t.eq((select pending_commission from ref.wallets), 75000::bigint, 'pending 75rb (default rate)');
 select t.eq((select available from ref.wallets), 0::bigint, 'nothing available before verification');
 select t.eq((select count(*) from ref.ops_notes), 0::bigint, 'referral cannot read internal notes');
 select t.eq((select count(*) from ref.participant_events where kind = 'confirmation'), 0::bigint, 'referral cannot read confirmation events');
@@ -125,14 +125,14 @@ select t.eq(ref.verify_commissions(array(select id from ref.commissions), false)
 reset role;
 
 select set_config('request.jwt.claim.sub', :'ra', false); set role authenticated;
-select t.eq((select available from ref.wallets), 50000::bigint, 'available after verification');
+select t.eq((select available from ref.wallets), 75000::bigint, 'available after verification');
 select t.expect_error($$select ref.request_withdrawal(50000)$$, '22023');  -- no payout account yet
 select ref.update_my_payout('BCA', '1234567890', 'Gipong');
-select t.expect_error($$select ref.request_withdrawal(60000)$$, '22023');  -- more than balance
+select t.expect_error($$select ref.request_withdrawal(80000)$$, '22023');  -- more than balance
 select t.expect_error($$select ref.request_withdrawal(10000)$$, '22023');  -- under minimum
-select ref.request_withdrawal(50000);
+select ref.request_withdrawal(75000);
 select t.eq((select available from ref.wallets), 0::bigint, 'balance on hold');
-select t.eq((select on_hold from ref.wallets), 50000::bigint, 'on hold 50rb');
+select t.eq((select on_hold from ref.wallets), 75000::bigint, 'on hold 75rb');
 select t.expect_error($$select ref.request_withdrawal(50000)$$, '22023');  -- no double withdrawal
 select t.expect_error($$update ref.withdrawals set status = 'paid'$$, '42501');
 reset role;
@@ -153,14 +153,14 @@ select t.eq((select status::text from ref.withdrawal_items), 'paid', 'withdrawal
 select t.eq((select available from ref.referrer_overview where name = 'Gipong'), 0::bigint, 'referrer overview wallet');
 select t.eq(jsonb_array_length(ref.referrer_performance(erp.today() - 30, erp.today())), 2, 'referrer report rows');
 select t.eq((select (x ->> 'completed')::int from jsonb_array_elements(ref.referrer_performance(erp.today() - 30, erp.today())) x where x ->> 'name' = 'Gipong'), 1, 'Gipong completed 1');
-select t.eq((select (x ->> 'paid')::int from jsonb_array_elements(ref.referrer_performance(erp.today() - 30, erp.today())) x where x ->> 'name' = 'Gipong'), 50000, 'Gipong paid 50rb');
+select t.eq((select (x ->> 'paid')::int from jsonb_array_elements(ref.referrer_performance(erp.today() - 30, erp.today())) x where x ->> 'name' = 'Gipong'), 75000, 'Gipong paid 75rb');
 select t.eq(jsonb_array_length(ref.ops_performance(erp.today(), erp.today() + 6, 'day')), 7, 'ops report 7 days');
 select t.eq((select (x ->> 'rescheduled')::int from jsonb_array_elements(ref.ops_performance(erp.today(), erp.today() + 6, 'week')) x limit 1) >= 0, true, 'week bucket works');
 select ref.app_counts();
 reset role;
 
 select set_config('request.jwt.claim.sub', :'ra', false); set role authenticated;
-select t.eq((select withdrawn from ref.wallets), 50000::bigint, 'withdrawn 50rb');
+select t.eq((select withdrawn from ref.wallets), 75000::bigint, 'withdrawn 75rb');
 select t.eq((select available from ref.wallets), 0::bigint, 'available 0 after payout');
 select t.eq((select count(*) from ref.audit_log), 0::bigint, 'referral cannot read audit log');
 select t.eq((select array_agg(kind order by id) from ref.notifications),
