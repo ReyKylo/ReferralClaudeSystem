@@ -1,6 +1,6 @@
 # Workflow v2: dari daftar akun sampai komisi cair
 
-Status: **rencana, belum dibangun**. Ditulis 5 Nov 2026 setelah audit database `ref` (live), portal
+Status: **rencana, belum dibangun. Keputusan owner K1–K8 sudah dijawab (bagian 9).** Ditulis 5 Nov 2026 setelah audit database `ref` (live), portal
 (`ReferralClaudeSystem`, PR #2), dan modul Referral di ERP (`ERPClaudeKita`, main `6afe52c`).
 Dokumen ini jadi pegangan untuk yang membangun (Sonnet). Bagian 8 berisi aturan kerjanya.
 
@@ -11,15 +11,15 @@ Dokumen ini jadi pegangan untuk yang membangun (Sonnet). Bagian 8 berisi aturan 
 | # | Langkah | Siapa | Di mana |
 |---|---------|-------|---------|
 | 1 | Referral bikin akun (username, nomor WA, password) | Referral | Portal `/masuk/` |
-| 2 | Referral isi data nomor: nama pemilik, nomor WA, email, bisa hari apa | Referral | Portal `/daftar/` |
+| 2 | Referral isi data nomor: nama pemilik, nomor WA, email, password akun, bisa hari apa | Referral | Portal `/daftar/` |
 | 3 | Tim ACC nomor A, B, C, lalu menjadwalkan ke hari yang cocok | Admin | ERP Referral → Peserta, Jadwal |
-| 4 | H-1: tim tinggal klik **Chat** per referral. Pesan WA sudah berisi daftar nomor besok + link konfirmasi | Admin / Ops | ERP Referral → Konfirmasi H-1 |
-| 5 | Referral buka link, tandai nomor mana yang **Siap** / **Tidak bisa**. Yang siap dikerjakan besoknya, lalu ditandai Selesai | Referral, lalu Ops | Portal `/besok/`, ERP |
+| 4 | H-1: tim tinggal klik **Chat** per referral. Pesan WA sudah berisi daftar nomor besok + link konfirmasi. Referral yang meneruskan ke pemilik nomor | Admin / Ops, lalu Referral | ERP Referral → Konfirmasi H-1 |
+| 5 | Referral buka link, tandai nomor mana yang **Siap** / **Tidak bisa**, paling lambat **jam 21.00 H-1**. Yang siap dikerjakan besoknya, lalu ditandai Selesai | Referral, lalu Ops | Portal `/besok/`, ERP |
 | 6 | Tiap nomor selesai = komisi (default **Rp75.000**, bisa beda per referral). Pembagian dengan pemilik nomor urusan referral. Tim memantau per referral | Admin | ERP Uang, Laporan; Portal Saldo |
 | 7 | Halaman **Cara mulai** untuk referral baru | Semua | Portal `/mulai/` (publik) |
 
-Istilah: di dokumen ini **nomor** = satu baris `ref.participants` (pemilik nomor + WA + email). Data model tidak
-diganti namanya; hanya teks di layar (lihat keputusan K6).
+Istilah: di dokumen ini **nomor** = satu baris `ref.participants` (pemilik nomor + WA + email + password akun).
+Data model tidak diganti namanya; hanya teks di layar yang memakai kata "nomor" (keputusan K6).
 
 ---
 
@@ -52,6 +52,8 @@ diganti namanya; hanya teks di layar (lihat keputusan K6).
 | A9 | Jadwal yang sudah lewat tapi belum ditutup (masih `active`) tidak punya tempat di ERP | Nomor kemarin hilang dari pandangan, komisi tidak pernah dibuat | Daftar "Belum ditutup" di ERP Hari ini (bagian 4.4) |
 | A10 | Beranda portal "Perlu perhatian" menyuruh referral mengingatkan peserta | Tidak sesuai alur baru | Ganti jadi kartu "Besok: N nomor. Konfirmasi siap" |
 | A14 | Tidak ada cara mengubah `ref.settings` (komisi default, template, target) selain SQL Editor | Owner harus menyentuh database untuk ganti angka | `ref.set_setting` + panel Pengaturan referral di ERP |
+| A15 | Belum ada kolom password; aturan lama di form: "Jangan pernah tulis password" | Owner sekarang minta password akun ikut didaftarkan (K6) | Password disimpan terenkripsi di Supabase Vault seperti `erp.accounts`, hanya bisa dilihat role yang diizinkan, setiap lihat tercatat (bagian 3.6) |
+| A16 | Belum ada batas waktu konfirmasi H-1 | Jawaban masuk terlalu malam untuk diatur ulang | Batas jam 21.00 WIB H-1 (K7), dicek di database |
 | A11 | Referral buatan admin (`create_referrer`) boleh tanpa WA | Tombol Chat H-1 tidak bisa dipakai | Tampilkan "Nomor WA referral belum ada" + tombol isi; wajibkan WA di `create_referrer` |
 | A12 | Portal `Gate` (`components/Shell.tsx`) menganggap halaman di luar `APP_PATHS` publik | `/besok/` akan jadi publik tanpa login kalau lupa didaftarkan | Tambah `/besok/` ke `APP_PATHS`; `/mulai/` sengaja publik |
 | A13 | Belum dipasang: PR #2 belum merge, Supabase "Confirm email" masih nyala, domain belum dipasang | Portal belum bisa dipakai | Langkah owner di bagian 7 |
@@ -70,10 +72,14 @@ Form `/daftar/` (per nomor):
 - **Nama pemilik nomor** (wajib)
 - **Nomor WhatsApp** (wajib, 10–15 digit, unik)
 - **Email** (wajib, unik)
+- **Password akun** (wajib, minimal 6, tombol Lihat). Teks bantu: "Password untuk email ini. Disimpan terenkripsi,
+  hanya tim yang bisa membukanya." Setelah terkirim, password tidak pernah ditampilkan lagi di portal (yang terlihat
+  hanya "Password tersimpan"). Saat memperbaiki nomor yang ditolak, password harus diisi ulang.
 - **Bisa hari apa** (chip Sen Sel Rab Kam Jum Sab Min + "Kapan saja"; default Kapan saja) → `avail_days`
 - **Jam yang cocok** (chip Pagi/Siang/Sore/Malam, boleh kosong) → `avail_time` (sudah ada)
 - **Mulai bisa tanggal** (boleh kosong) → `avail_date` (sudah ada)
-- Data tambahan: ID akun, catatan (sudah ada). Tetap ada peringatan "Jangan pernah tulis password atau kode OTP".
+- Data tambahan: ID akun, catatan (sudah ada). Peringatan diganti jadi: "Jangan pernah tulis kode OTP di portal.
+  Kode OTP hanya dikirim lewat chat saat tim memintanya." 
 - Persetujuan (wajib): **"Pemilik nomor sudah setuju datanya didaftarkan dan dijadwalkan lewat saya."**
 - Opsional fase berikutnya: **Tambah banyak sekaligus** (tempel baris `nama, nomor, email`), tiap baris divalidasi
   dan ditampilkan hasil per baris. Tidak wajib di v2.
@@ -87,7 +93,9 @@ Form `/daftar/` (per nomor):
     `avail_date` kosong atau ≤ hari itu.
   - Kelompokkan per referral, dengan tombol **"Pilih semua dari {referral}"**.
   - Menjadwalkan ke hari yang tidak cocok tetap boleh, tapi ada peringatan yang harus diklik.
-  - Target harian tetap dicek oleh `ref.schedule_participants` (lebihi target hanya jika disengaja).
+  - Target harian tetap dicek oleh `ref.schedule_participants` (lebihi target hanya jika disengaja). Target bisa
+    berbeda tiap hari dan boleh lebih dari 20 (sudah ada: `ref.set_day_target`, maksimal 500); default untuk hari
+    yang belum diatur diubah di Pengaturan referral (K8). Tidak ada batas per referral.
 - Referral dapat notifikasi "dijadwalkan {hari} jam {jam}" (sudah ada).
 
 ### Langkah 4. H-1: tim chat referral
@@ -101,11 +109,14 @@ Halo Gipong, besok Jumat, 6 Nov ada 5 nomor kamu yang dijadwalkan:
 3. Citra Lestari · 0813-4012-1014 · jam 13.00
 4. Dewi Wijaya · 0813-4013-1021 · jam 16.00
 5. Eka Kusuma · 0813-4014-1028 · jam 16.00
-Tolong siapkan nomornya ya. Tandai yang siap atau tidak bisa di sini:
+Tolong kabari pemilik nomornya dan siapkan ya. Tandai yang siap atau tidak bisa paling lambat jam 21.00 di sini:
 https://referral.tampilresmi.com/besok/
 Terima kasih!
 ```
 
+- Chat ini ke **referral**, dan referral yang meneruskan ke pemilik nomor (K1). Chat langsung ke pemilik nomor hanya
+  cadangan di menu "Lainnya" per nomor.
+- Pengingat H-1 adalah juga saat ketersediaan dicek: walau `avail_days` bilang bisa, jawaban H-1 yang menentukan (K3).
 - Menekan Chat otomatis mencatat semua nomor referral itu untuk hari itu sebagai **Sudah dihubungi**
   (`contacted`) lewat `ref.mark_referrer_contacted`, kecuali yang sudah punya jawaban. Bisa dibatalkan (toast Undo).
 - Kartu referral menampilkan: jumlah nomor, berapa siap / tidak bisa / belum jawab, kapan terakhir dichat dan oleh
@@ -115,9 +126,15 @@ Terima kasih!
 - Portal `/besok/` (wajib login; link dari WA langsung ke sini, setelah login kembali ke `/besok/`):
   - Judul "Besok, Jumat 6 Nov: 5 nomor". Daftar nomor + jam, masing-masing dua tombol **Siap** / **Tidak bisa**.
   - Tombol cepat **"Semua siap"**. Kolom catatan opsional ("Nomor 3 baru bisa jam 15.00").
+  - Per nomor ada tombol **Chat pemilik** (`wa.me/<nomor>`, pesan: "Halo {nama}, besok {hari} jam {jam} nomor
+    kamu dipakai ya. Tolong siapkan HP-nya.") dan **Bagikan daftar** (salin seluruh daftar besok) supaya referral
+    mudah meneruskan (K1).
+  - Batas: **jam 21.00 WIB H-1** (`settings.confirm_deadline = "21:00"`). Di halaman tampil "Konfirmasi paling lambat
+    jam 21.00 malam ini" dan hitung mundur kalau tinggal < 2 jam. Lewat jam itu tombol terkunci, tampil "Batas
+    konfirmasi sudah lewat. Chat admin kalau ada perubahan." + tombol WA admin.
   - **Kirim konfirmasi** → `ref.confirm_my_day`. Siap → `available` (status `confirmed`). Tidak bisa →
     `unavailable` (status `waiting_schedule`, tempatnya tetap terlihat merah di ERP sampai dipindah) + notifikasi admin.
-  - Bisa diubah lagi selama hari H belum lewat dan nomor belum Selesai.
+  - Bisa diubah lagi sampai batas jam 21.00 H-1 (K7). Setelah itu hanya tim yang bisa mengubah lewat ERP.
   - Juga bisa pilih hari lain kalau ada jadwal lusa (tab Besok / Lusa / tanggal berikutnya yang punya jadwal).
 - Kalau referral menjawab lewat chat WA saja, ops tetap bisa mengisi jawabannya di ERP (per nomor atau
   **"Semua siap"** per referral).
@@ -150,13 +167,15 @@ File: `supabase/migrations/20261106090000_ref_workflow_v2.sql`. Semua fungsi `se
 ```sql
 alter table ref.participants add column avail_days smallint[]
   check (avail_days is null or (avail_days <@ array[1,2,3,4,5,6,7]::smallint[] and cardinality(avail_days) between 1 and 7));
+alter table ref.participants add column password_secret_id uuid;  -- vault.secrets.id; password tidak pernah di tabel ini
 alter table ref.referrers add column commission_rate bigint check (commission_rate is null or commission_rate >= 0);
 alter table ref.schedule_days ... -- tidak berubah
 
 update ref.settings set value = '75000' where key = 'commission_per_completed';
 insert into ref.settings (key, value) values
   ('wa_referral_h1_template', to_jsonb('Halo {referral}, besok {date} ada {count} nomor kamu yang dijadwalkan:\n{list}\nTolong siapkan nomornya ya. Tandai yang siap atau tidak bisa di sini:\n{link}\nTerima kasih!'::text)),
-  ('portal_url', '"https://referral.tampilresmi.com"')
+  ('portal_url', '"https://referral.tampilresmi.com"'),
+  ('confirm_deadline', '"21:00"')
 on conflict (key) do nothing;
 ```
 Baris daftar (`{list}`) dibentuk di ERP: `{no}. {name} · {wa} · jam {time}` (jam pakai `fmtT`, mis. `13.00`).
@@ -165,14 +184,15 @@ Baris daftar (`{list}`) dibentuk di ERP: `{no}. {name} · {wa} · jam {time}` (j
 | Fungsi | Peran | Isi |
 |--------|-------|-----|
 | `ref.mark_referrer_contacted(p_day date, p_referrer_id uuid) returns int` | admin, ops | Entry `active` hari itu milik referral itu dengan `confirmation = 'not_contacted'` → `contacted` (pakai logika `set_confirmation` agar status dan event ikut). Kembalikan jumlah. |
-| `ref.confirm_my_day(p_day date, p_ready uuid[], p_not_ready uuid[], p_note text default null) returns jsonb` | referral | Entry harus milik referral pemanggil (`participants.referrer_id = ref.my_referrer_id()`), `state = 'active'`, `day >= erp.today()`. Id yang bukan miliknya → error 42501 (jangan diam-diam dilewati). Siap → `available`, Tidak bisa → `unavailable`. Catatan masuk `ops_notes` dengan awalan "Dari referral:". Notifikasi admin `referral_confirmed` (ringkasan) dan `participant_unavailable` per nomor yang tidak bisa. Kembalikan `{ready, not_ready}`. |
+| `ref.confirm_my_day(p_day date, p_ready uuid[], p_not_ready uuid[], p_note text default null) returns jsonb` | referral | Hanya `p_day > erp.today()`, dan kalau `p_day = erp.today() + 1` waktu WIB sekarang harus sebelum `confirm_deadline` (error: "Batas konfirmasi jam 21.00 sudah lewat. Chat admin."). Entry harus milik referral pemanggil (`participants.referrer_id = ref.my_referrer_id()`), `state = 'active'`. Id yang bukan miliknya → error 42501 (jangan diam-diam dilewati). Siap → `available`, Tidak bisa → `unavailable`. Catatan masuk `ops_notes` dengan awalan "Dari referral:". Notifikasi admin `referral_confirmed` (ringkasan) dan `participant_unavailable` per nomor yang tidak bisa. Kembalikan `{ready, not_ready}`. |
 | `ref.set_referrer_rate(p_referrer_id uuid, p_rate bigint, p_apply_pending boolean default false) returns int` | admin | `p_rate null` = ikut default. Simpan, audit nilai lama/baru. Kalau `p_apply_pending`, ubah `amount` komisi `pending` referral itu. Kembalikan jumlah komisi yang diubah. Notifikasi referral `rate_changed`. |
 | `ref.complete_entries(p_ids uuid[], p_note text default null) returns int` | admin, ops | Loop `ref.complete_entry` (bulk "Semua selesai"). |
-| `ref.set_setting(p_key text, p_value jsonb) returns void` | admin | Hanya kunci yang diizinkan: `commission_per_completed`, `wa_referral_h1_template`, `daily_target`, `withdraw_min`, `withdraw_presets`, `admin_wa`, `payout_hours`. Validasi tipe dan rentang per kunci. Audit nilai lama/baru. |
+| `ref.set_setting(p_key text, p_value jsonb) returns void` | admin | Hanya kunci yang diizinkan: `commission_per_completed`, `wa_referral_h1_template`, `confirm_deadline`, `daily_target`, `withdraw_min`, `withdraw_presets`, `admin_wa`, `payout_hours`. Validasi tipe dan rentang per kunci. Audit nilai lama/baru. |
 | `ref.bulk_confirm(p_day date, p_referrer_id uuid, p_status ref.confirmation_status) returns int` | admin, ops | "Semua siap" per referral dari ERP saat referral menjawab lewat chat. |
 
 ### 3.3 Fungsi yang diubah
-- `ref.submit_participant` dan `ref.update_my_participant`: tambah parameter `p_avail_days smallint[] default null`.
+- `ref.submit_participant` dan `ref.update_my_participant`: tambah parameter `p_avail_days smallint[] default null`
+  dan `p_password text` (wajib saat submit, minimal 6 karakter; disimpan lewat `vault.create_secret`, lihat 3.6).
   **Drop dulu** fungsi lama sebelum membuat yang baru (PostgREST bingung kalau ada dua overload), lalu ulangi
   `grant execute ... to authenticated`.
 - `ref.complete_entry`: nominal komisi = tarif efektif referral (lihat langkah 6).
@@ -187,6 +207,21 @@ Baris daftar (`{list}`) dibentuk di ERP: `{no}. {name} · {wa} · jam {time}` (j
   effective_rate, jumlah nomor per status, saldo. Dipakai ERP Uang & Laporan.
 - Referral boleh membaca `commission_rate` baris dirinya (sudah lewat RLS referrers). Tidak ada jalur menulis.
 
+### 3.6 Password nomor (Supabase Vault, pola sama dengan `erp.set_account_password`)
+- `submit_participant` memanggil `vault.create_secret(p_password, 'ref_participant_' || id, 'Password nomor referral')`
+  dan menyimpan id-nya di `participants.password_secret_id`. Password **tidak** masuk `ref.participants`,
+  `ref.audit_log`, notifikasi, atau view mana pun.
+- View hanya memuat `has_password boolean`. Referral tidak punya fungsi untuk membaca password, termasuk miliknya sendiri.
+- `ref.reveal_participant_password(p_participant_id uuid, p_reason text default 'reveal') returns text`: hanya role
+  yang ada di `erp.settings.password_reveal_roles` (sama dengan ERP), mencatat `ref.audit('participant.password_' ||
+  p_reason, ...)` setiap kali dipanggil.
+- Saat nomor ditolak: secret dihapus (`delete from vault.secrets where id = ...`) dan `password_secret_id = null`.
+  Kirim ulang (perbaiki) wajib mengisi password lagi.
+- Saat nomor dihubungkan ke akun ERP (`ref.link_erp_account`): kalau akun ERP belum punya password, salin di server
+  lewat `erp.set_account_password` (tidak lewat browser).
+- Migrasi harus `grant` yang perlu saja; fungsi vault tidak boleh bisa dipanggil langsung oleh `authenticated`.
+- Repo publik: tes dan mock hanya memakai password palsu.
+
 ### 3.5 Tes SQL (`tests/sql/`)
 Tambah `30_workflow_v2.sql`:
 1. Referral A daftar 3 nomor dengan `avail_days`; admin terima; jadwalkan besok.
@@ -199,6 +234,10 @@ Tambah `30_workflow_v2.sql`:
 7. Referral tidak bisa memanggil `set_referrer_rate`, `set_setting`, `mark_referrer_contacted`, `bulk_confirm`,
    `complete_entries`. `set_setting` menolak kunci di luar daftar.
 8. `referrer_performance` menghitung komisi berdasarkan tanggal selesai.
+9. Password: setelah submit, `ref.participants` tidak memuat password; referral tidak bisa memanggil
+   `reveal_participant_password`; owner bisa dan tercatat di audit; ditolak → secret terhapus.
+10. Batas 21.00: `confirm_my_day` untuk besok ditolak setelah jam 21.00 WIB (uji dengan mengganti `confirm_deadline`
+    ke jam yang sudah lewat), hari ini ditolak, lusa boleh. Ops tetap bisa `set_confirmation` setelah batas.
 
 ---
 
@@ -220,6 +259,11 @@ File utama: `components/referral/*.tsx`, `lib/ref/{queries,actions,types}.ts`, `
     dihubungi), tombol per nomor yang sudah ada (jawaban, catatan, Selesai). Chat langsung ke pemilik nomor
     hanya ada di menu "Lainnya" (cadangan, K1).
 - Nomor yang ditandai Tidak bisa oleh referral muncul dengan catatan referral dan tombol **Pindah jadwal**.
+
+- Kartu referral menandai yang belum menjawab sampai **21.00** dengan "Belum konfirmasi, batas lewat" (merah) supaya
+  tim tahu harus memutuskan sendiri.
+- Detail nomor (`RefPeople.tsx`): baris "Password: tersimpan" + tombol **Lihat** / **Salin** (hanya role yang
+  diizinkan; pakai `reveal_participant_password`, tampil 30 detik lalu tersembunyi lagi, sama seperti layar akun ERP).
 
 ### 4.2 Jadwal (`RefSchedule.tsx`)
 Lihat langkah 3: tampilkan `avail_days`, saring "Cocok untuk hari ini", kelompok per referral, pilih semua per
@@ -258,8 +302,10 @@ File utama: `app/*/page.tsx`, `components/Shell.tsx`, `lib/{data,actions,status,
 - Action baru: `confirmMyDay(day, ready, notReady, note)`.
 
 ### 5.2 Daftarkan nomor (`app/daftar/page.tsx`)
-- Field "Bisa hari apa" (chip, multi; "Kapan saja" = kosong). Teks persetujuan baru (A6).
-- Mode perbaiki (`?fix=`) ikut mengisi `avail_days`.
+- Field "Bisa hari apa" (chip, multi; "Kapan saja" = kosong). Field **Password akun** (wajib). Teks persetujuan
+  baru (A6).
+- Mode perbaiki (`?fix=`) ikut mengisi `avail_days`, tapi password dikosongkan dan wajib diisi lagi.
+- Draft yang tersimpan di HP (`localStorage`) **tidak boleh** memuat password.
 
 ### 5.3 Besok (`app/besok/page.tsx`, baru, wajib login)
 - Lihat langkah 5. Tambah `/besok/` ke `APP_PATHS` di `Shell.tsx` (A12). Kalau belum login, `/masuk/` harus
@@ -271,18 +317,19 @@ File utama: `app/*/page.tsx`, `components/Shell.tsx`, `lib/{data,actions,status,
 ### 5.4 Cara mulai (`app/mulai/page.tsx`, baru, publik)
 Isi (bahasa awam, pendek, pakai "jalan" CodePave 4 langkah sebagai gambar):
 1. **Buat akun.** Cukup username, nomor WhatsApp, dan password. Tidak perlu email.
-2. **Daftarkan nomor.** Isi nama pemilik, nomor WhatsApp, email, dan hari yang bisa. Pastikan pemiliknya sudah setuju.
+2. **Daftarkan nomor.** Isi nama pemilik, nomor WhatsApp, email, password akunnya, dan hari yang bisa. Pastikan
+   pemiliknya sudah setuju. Password disimpan terenkripsi.
 3. **Tunggu dicek.** Tim mengecek dan menerima nomor. Kalau ditolak, alasannya muncul dan Anda bisa memperbaiki.
 4. **Dijadwalkan.** Anda dapat notifikasi hari dan jamnya.
-5. **H-1, siapkan nomornya.** Tim mengirim WhatsApp berisi daftar nomor besok. Buka linknya, tandai **Siap** atau
-   **Tidak bisa**.
+5. **H-1, siapkan nomornya.** Tim mengirim WhatsApp berisi daftar nomor besok. Kabari pemilik nomornya, lalu buka
+   linknya dan tandai **Siap** atau **Tidak bisa** paling lambat **jam 21.00**.
 6. **Selesai, komisi masuk.** Setiap nomor yang selesai: **Rp75.000** (atau tarif khusus Anda). Setelah dicek tim,
    masuk saldo.
 7. **Tarik saldo.** Mulai Rp50.000. Kirim detailnya ke WhatsApp admin. Uang masuk paling lambat 1x24 jam.
 
 Kotak "Penting":
 - Pembagian komisi dengan pemilik nomor Anda atur sendiri.
-- Jangan pernah tulis atau kirim password dan kode OTP lewat portal.
+- Jangan pernah tulis kode OTP di portal. Kode OTP hanya dikirim lewat chat saat tim memintanya.
 - Satu nomor WhatsApp atau email hanya bisa didaftarkan sekali.
 
 Tanya jawab singkat: kenapa ditolak, kalau nomor tidak bisa besok, kapan komisi masuk, lupa password (chat admin).
@@ -300,7 +347,9 @@ Tombol: **Buat akun** (ke `/masuk/`), **Chat admin**. Nominal di halaman publik 
 ## 6. Tes yang harus lolos sebelum PR dianggap selesai
 
 ### Portal (`npm run test:e2e`, HP + desktop)
-- Daftar nomor dengan hari Sen+Rab; muncul di daftar dengan "Bisa: Sen, Rab".
+- Daftar nomor dengan hari Sen+Rab dan password; muncul di daftar dengan "Bisa: Sen, Rab" dan "Password tersimpan";
+  draft di `localStorage` tidak memuat password.
+- `/besok/` setelah jam 21.00 (mock dengan batas yang sudah lewat) terkunci dan menampilkan tombol chat admin.
 - Buka `/besok/` tanpa login → `/masuk/` → setelah login kembali ke `/besok/`.
 - Tandai 2 siap 1 tidak bisa → status di daftar berubah; ubah lagi bisa.
 - Referral dengan tarif khusus melihat nominal itu di Saldo dan Cara kerja komisi.
@@ -315,6 +364,7 @@ Tombol: **Buat akun** (ke `/masuk/`), **Chat admin**. Nominal di halaman publik 
 - Ubah tarif referral (admin) → komisi berikutnya pakai tarif itu; staff tidak melihat tombol Ubah.
 - Jadwal: saring "Cocok untuk hari ini" sesuai `avail_days`.
 - Belum ditutup tampil untuk jadwal kemarin.
+- Lihat password nomor: owner bisa (tercatat), staff tanpa izin tidak melihat tombolnya.
 - Teks baru ada di `id.json` dan `zh-CN.json` (tes kunci i18n yang sudah ada harus lolos).
 
 ### Database: `tests/sql/run.sh` (stub dan `ERP_DIR` asli) lolos, termasuk `30_workflow_v2.sql`.
@@ -338,6 +388,8 @@ Tombol: **Buat akun** (ke `/masuk/`), **Chat admin**. Nominal di halaman publik 
 
 - Semua tulisan lewat fungsi SQL dengan `ref.require_role`. Jangan menambah policy INSERT/UPDATE/DELETE di tabel.
   `anon` hanya boleh `signup_available` dan `login_email`.
+- Password nomor hanya lewat Vault (bagian 3.6). Jangan pernah log, kirim lewat notifikasi, simpan di draft, atau
+  tampilkan balik ke referral.
 - Jangan pernah menaruh service_role / secret key di repo atau env file. Repo referral publik. Jangan commit data
   nomor asli.
 - Tampilan CodePave (token di `app/globals.css` portal dan `styles/app.css` ERP): teks di atas oranye selalu
@@ -350,15 +402,15 @@ Tombol: **Buat akun** (ke `/masuk/`), **Chat admin**. Nominal di halaman publik 
 
 ---
 
-## 9. Keputusan yang perlu dikonfirmasi owner (default dipakai kalau tidak ada jawaban)
+## 9. Keputusan owner (dijawab 5 Nov 2026)
 
-| Kode | Pertanyaan | Default |
+| Kode | Pertanyaan | Jawaban |
 |------|------------|---------|
-| K1 | H-1 hanya chat ke **referral**? Chat langsung ke pemilik nomor masih perlu? | Hanya referral; chat pemilik nomor disembunyikan di menu "Lainnya" sebagai cadangan |
-| K2 | Referral konfirmasi lewat link portal, dan tim juga bisa isi manual dari balasan WA? | Ya, dua-duanya |
-| K3 | "Bisa hari apa" = pilihan hari Senin–Minggu? | Ya, plus "Kapan saja" dan "Mulai bisa tanggal" |
-| K4 | Rp75.000 per nomor yang **selesai**; tarif baru hanya untuk nomor yang selesai setelah diubah? | Ya, dengan opsi terapkan ke komisi yang masih menunggu |
-| K5 | Akun referral langsung aktif tanpa ACC? | Ya (sesuai "siapapun bisa"); admin bisa menonaktifkan |
-| K6 | Di layar, sebut "nomor" atau "peserta"? | "Nomor" di portal dan modul Referral ERP |
-| K7 | Ada batas jam konfirmasi H-1 (mis. sampai 21.00)? | Tidak dikunci; ERP menandai yang belum menjawab |
-| K8 | Ada batas maksimal nomor per referral per hari? | Tidak; hanya target harian total (20) |
+| K1 | H-1 chat ke siapa? | **Ke referral.** Referral yang meneruskan ke pemilik nomor. Chat langsung ke pemilik nomor hanya cadangan di menu "Lainnya". Portal memberi tombol Chat pemilik per nomor untuk referral |
+| K2 | Konfirmasi lewat link portal dan juga manual oleh tim? | **Ya, dua-duanya** |
+| K3 | "Bisa hari apa"? | **Senin–Minggu + Kapan saja.** Tetap dicek ulang saat H-1 |
+| K4 | Komisi | **Rp75.000 per nomor selesai**, tarif per referral bisa ditetapkan admin. Tarif baru untuk nomor yang selesai setelah diubah, opsi terapkan ke komisi yang masih menunggu |
+| K5 | Akun referral perlu ACC? | **Tidak**, langsung aktif. Admin bisa menonaktifkan |
+| K6 | Sebutan dan isi data | **"Nomor"**, isinya nomor WA, email, dan **password** akun (disimpan terenkripsi, bagian 3.6) |
+| K7 | Batas konfirmasi H-1 | **Jam 21.00 WIB H-1.** Setelah itu hanya tim yang bisa mengubah |
+| K8 | Batas nomor | **Tidak ada batas per referral.** Target total per hari bisa diubah tiap hari dan boleh lebih dari 20 |
