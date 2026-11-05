@@ -15,7 +15,7 @@ export function createStore() {
   const today = todayWIB();
   const s = {
     settings: [
-      { key: 'daily_target', value: 20 }, { key: 'commission_per_completed', value: 50000 }, { key: 'withdraw_min', value: 50000 },
+      { key: 'daily_target', value: 20 }, { key: 'commission_per_completed', value: 75000 }, { key: 'withdraw_min', value: 50000 }, { key: 'confirm_deadline', value: '21:00' },
       { key: 'withdraw_presets', value: [100000, 200000, 300000, 500000] }, { key: 'admin_wa', value: '6281299323591' },
       { key: 'payout_hours', value: 24 }, { key: 'login_email_domain', value: DOMAIN },
     ],
@@ -24,15 +24,15 @@ export function createStore() {
       { id: 'u-erp', email: 'owner@tampilresmi.com', password: 'rahasia123', erp: true },
     ],
     referrers: [
-      { id: 'r-gipong', user_id: 'u-gipong', name: 'gipong', username: 'gipong', wa: '0812-1111-1111', active: true, invited_by: null, payout_method: 'BCA', payout_account: '1234567890', payout_name: 'Gipong Saputra' },
-      { id: 'r-zakar', user_id: 'u-zakar', name: 'zakar', username: 'zakar', wa: '0812-2222-2222', active: true, invited_by: null, payout_method: null, payout_account: null, payout_name: null },
+      { id: 'r-gipong', user_id: 'u-gipong', name: 'gipong', username: 'gipong', wa: '0812-1111-1111', active: true, invited_by: null, payout_method: 'BCA', payout_account: '1234567890', payout_name: 'Gipong Saputra', commission_rate: null },
+      { id: 'r-zakar', user_id: 'u-zakar', name: 'zakar', username: 'zakar', wa: '0812-2222-2222', active: true, invited_by: null, payout_method: null, payout_account: null, payout_name: null, commission_rate: 100000 },
     ],
     participants: [], entries: [], events: [], commissions: [], withdrawals: [], notifications: [], seq: 0, nid: 0,
   };
   let i = 0;
   const mk = (name, status, enteredOn, extra = {}) => {
     const p = { id: `p-${i}`, referrer_id: 'r-gipong', name, wa: `0813-40${String(10 + i).padStart(2, '0')}-${String(1000 + i * 7)}`, email: `${name.toLowerCase().replace(/\s+/g, '.')}@gmail.com`,
-      cloud_ref: null, avail_date: null, avail_time: '13:00', notes: null, status, reject_reason: null, entered_on: enteredOn,
+      cloud_ref: null, avail_date: null, avail_time: '13:00', notes: null, avail_days: null, has_password: true, status, reject_reason: null, entered_on: enteredOn,
       created_at: new Date(new Date(enteredOn + 'T02:00:00Z').getTime() + i * 1000).toISOString(), ...extra };
     i++;
     s.participants.push(p);
@@ -40,12 +40,15 @@ export function createStore() {
     if (status !== 'submitted') s.events.push({ id: s.events.length + 1, participant_id: p.id, at: p.created_at, kind: 'status', from_value: 'submitted', to_value: status });
     return p;
   };
-  const book = (p, day, confirmation, state = 'active') => s.entries.push({ participant_id: p.id, day, start_time: '13:00', state, confirmation });
+  const book = (p, day, confirmation, state = 'active') => s.entries.push({ id: `e-${s.entries.length}`, participant_id: p.id, day, start_time: '13:00', state, confirmation });
   for (const [k, name] of ['Andi Pratama', 'Budi Santoso', 'Citra Lestari', 'Dewi Wijaya'].entries()) {
     const p = mk(name, 'completed', addDays(today, -8 + k)); book(p, addDays(today, -5 + k), 'available', 'completed');
     s.commissions.push({ id: `c-${p.id}`, referrer_id: 'r-gipong', participant_id: p.id, amount: 50000, status: k < 3 ? 'approved' : 'pending', created_at: addDays(today, -5 + k) + 'T10:00:00Z' });
   }
   book(mk('Eka Kusuma', 'confirmation_pending', addDays(today, -2)), addDays(today, 1), 'waiting');
+  book(mk('Indah Permata', 'confirmation_pending', addDays(today, -2)), addDays(today, 1), 'contacted');
+  book(mk('Joko Hakim', 'scheduled', addDays(today, -2)), addDays(today, 1), 'not_contacted');
+  book(mk('Kartika Utami', 'confirmed', addDays(today, -2), { avail_days: [1, 3, 5] }), addDays(today, 2), 'available');
   mk('Fajar Saputra', 'approved', addDays(today, -1));
   mk('Gita Rahma', 'submitted', today);
   const rj = mk('Hendra Nugroho', 'rejected', addDays(today, -2), { wa: '0813-9999-0000', reject_reason: 'Nomor WhatsApp tidak aktif' });
@@ -61,7 +64,7 @@ function views(s, me) {
   const mine = (rows) => rows.filter((r) => r.referrer_id === me.id);
   const p = (x) => {
     const e = s.entries.filter((y) => y.participant_id === x.id && y.state !== 'cancelled').at(-1);
-    return { ...x, wa_norm: norm(x.wa), scheduled_day: e?.day ?? null, scheduled_time: e?.start_time ?? null, entry_state: e?.state ?? null, confirmation: e?.confirmation ?? null };
+    return { ...x, entry_id: e?.id ?? null, wa_norm: norm(x.wa), scheduled_day: e?.day ?? null, scheduled_time: e?.start_time ?? null, entry_state: e?.state ?? null, confirmation: e?.confirmation ?? null };
   };
   const c = mine(s.commissions), w = mine(s.withdrawals);
   const sum = (rows) => rows.reduce((t, r) => t + r.amount, 0);
@@ -70,6 +73,8 @@ function views(s, me) {
     settings: s.settings,
     referrers: s.referrers.filter((r) => r.id === me.id),
     participant_overview: mine(s.participants).map(p),
+    entry_overview: s.entries.filter((e) => ['active', 'completed'].includes(e.state) && s.participants.some((x) => x.id === e.participant_id && x.referrer_id === me.id))
+      .map((e) => { const x = s.participants.find((y) => y.id === e.participant_id); return { ...e, name: x.name, wa: x.wa, status: x.status }; }),
     participant_events: s.events.filter((e) => s.participants.some((x) => x.id === e.participant_id && x.referrer_id === me.id)),
     wallets: [{ total_commission: sum(c.filter((x) => x.status !== 'void')), pending_commission: sum(c.filter((x) => x.status === 'pending')), approved_commission: approved, on_hold: hold, withdrawn: paid, available: approved - hold - paid }],
     commission_items: c.map((x) => ({ ...x, participant_name: s.participants.find((y) => y.id === x.participant_id)?.name })),
@@ -85,6 +90,10 @@ function rpc(s, fn, b, user, me) {
   if (fn === 'signup_available') {
     const u = clean(b.p_username);
     return ok({ username_valid: /^[a-z0-9_.]{3,20}$/.test(u), username_free: !s.referrers.some((r) => r.username === u), wa_valid: norm(b.p_wa).length >= 10 && norm(b.p_wa).length <= 15, wa_free: !s.referrers.some((r) => wa(r) === norm(b.p_wa)) });
+  }
+  if (fn === 'public_info') {
+    const get = (k) => s.settings.find((x) => x.key === k)?.value;
+    return ok({ commission: get('commission_per_completed'), withdraw_min: get('withdraw_min'), payout_hours: get('payout_hours'), confirm_deadline: get('confirm_deadline'), admin_wa: get('admin_wa') });
   }
   if (fn === 'login_email') {
     const id = String(b.p_identifier ?? '').trim(), r = s.referrers.find((x) => x.active && (x.username === clean(id) || (norm(id).length >= 10 && wa(x) === norm(id))));
@@ -108,15 +117,31 @@ function rpc(s, fn, b, user, me) {
   if (!me) return fail('42501', 'Tidak punya akses');
   switch (fn) {
     case 'submit_participant': {
-      if (!b.p_consent_wa) return fail('22023', 'Peserta harus setuju dihubungi lewat WhatsApp');
+      if (!b.p_consent_wa) return fail('22023', 'Pemilik nomor harus sudah setuju datanya didaftarkan');
+      if (String(b.p_password ?? '').length < 6) return fail('22023', 'Password akun minimal 6 karakter');
       if (s.participants.some((x) => x.status !== 'rejected' && norm(x.wa) === norm(b.p_wa))) return fail('23505', 'Nomor WhatsApp ini sudah terdaftar');
       if (s.participants.some((x) => x.status !== 'rejected' && x.email.toLowerCase() === String(b.p_email).trim().toLowerCase())) return fail('23505', 'Email ini sudah terdaftar');
       const p = { id: randomUUID(), referrer_id: me.id, name: b.p_name.trim(), wa: b.p_wa.trim(), email: b.p_email.trim().toLowerCase(), cloud_ref: b.p_cloud_ref, avail_date: b.p_avail_date, avail_time: b.p_avail_time,
-        notes: b.p_notes, status: 'submitted', reject_reason: null, entered_on: todayWIB(), created_at: new Date().toISOString() };
+        notes: b.p_notes, avail_days: b.p_avail_days && b.p_avail_days.length < 7 ? [...new Set(b.p_avail_days)].sort() : null, has_password: true, status: 'submitted', reject_reason: null, entered_on: todayWIB(), created_at: new Date().toISOString() };
       s.participants.push(p);
       s.events.push({ id: s.events.length + 1, participant_id: p.id, at: p.created_at, kind: 'status', from_value: null, to_value: 'submitted' });
       s.notifications.push({ id: ++s.nid, referrer_id: me.id, kind: 'registration_submitted', data: { participant_id: p.id, name: p.name }, created_at: p.created_at, read_at: null });
       return ok(p.id);
+    }
+    case 'confirm_my_day': {
+      const deadline = String(s.settings.find((x) => x.key === 'confirm_deadline').value);
+      const [h, m] = deadline.split(':').map(Number);
+      const nowWib = new Date(Date.now() + 7 * 3600000), minutes = nowWib.getUTCHours() * 60 + nowWib.getUTCMinutes(), today = todayWIB();
+      if (b.p_day <= today || (b.p_day === addDays(today, 1) && minutes >= h * 60 + m)) return fail('22023', `Batas konfirmasi jam ${deadline.replace(':', '.')} sudah lewat. Chat admin kalau ada perubahan.`);
+      const ready = b.p_ready ?? [], not = b.p_not_ready ?? [], all = [...ready, ...not];
+      if (!all.length) return fail('22023', 'Pilih nomor yang mau dikonfirmasi');
+      const mineEntries = s.entries.filter((e) => e.state === 'active' && e.day === b.p_day && s.participants.some((x) => x.id === e.participant_id && x.referrer_id === me.id));
+      if (!all.every((id) => mineEntries.some((e) => e.id === id))) return fail('42501', 'Ada nomor yang bukan milik Anda atau sudah tidak dijadwalkan');
+      for (const [ids, conf, status] of [[ready, 'available', 'confirmed'], [not, 'unavailable', 'waiting_schedule']]) for (const id of ids) {
+        const e = s.entries.find((x) => x.id === id); e.confirmation = conf;
+        s.participants.find((x) => x.id === e.participant_id).status = status;
+      }
+      return ok({ ready: ready.length, not_ready: not.length });
     }
     case 'update_my_payout':
       if (![b.p_method, b.p_account, b.p_name].every((v) => String(v ?? '').trim())) return fail('22023', 'Lengkapi bank/e-wallet, nomor, dan nama pemilik');
@@ -161,6 +186,9 @@ export function startMock(port = 54322) {
       };
       if (req.method === 'OPTIONS') return send(204);
       if (url.pathname === '/__reseed') { s = createStore(); return send(200, { ok: true }); }
+      // lets a test play the admin: /__setting?key=confirm_deadline&value=00:00 and /__rate?referrer=r-gipong&value=100000
+      if (url.pathname === '/__setting') { s.settings.find((x) => x.key === url.searchParams.get('key')).value = url.searchParams.get('value'); return send(200, { ok: true }); }
+      if (url.pathname === '/__rate') { s.referrers.find((r) => r.id === url.searchParams.get('referrer')).commission_rate = Number(url.searchParams.get('value')) || null; return send(200, { ok: true }); }
       let raw = '';
       for await (const chunk of req) raw += chunk;
       const body = raw ? JSON.parse(raw) : {};
@@ -200,6 +228,7 @@ export function startMock(port = 54322) {
       for (const [k, val] of url.searchParams) {
         if (['select', 'order', 'limit', 'offset'].includes(k)) continue;
         if (val.startsWith('eq.')) rows = rows.filter((r) => String(r[k]) === val.slice(3));
+        else if (val.startsWith('gt.')) rows = rows.filter((r) => String(r[k]) > val.slice(3));
       }
       const order = (url.searchParams.get('order') ?? '').split(',').filter(Boolean).map((o) => { const [c, d] = o.split('.'); return [c, d === 'desc' ? -1 : 1]; });
       rows = [...rows].sort((a, b) => { for (const [c, d] of order) { if (a[c] === b[c]) continue; return (typeof a[c] === 'number' ? a[c] - b[c] : String(a[c]).localeCompare(String(b[c]))) * d; } return 0; });

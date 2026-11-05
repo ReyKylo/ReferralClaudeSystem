@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { PRow } from '@/components/PRow';
 import { Empty, Field, Icon, PBadge, Road, Skeleton } from '@/components/ui';
 import { useCommissions, useParticipant, useParticipants } from '@/lib/data';
-import { addDays, fmtD, fmtDL, fmtT, normWa, todayWIB, waLink } from '@/lib/format';
+import { addDays, fmtD, fmtDays, fmtDL, fmtT, normWa, todayWIB, waLink } from '@/lib/format';
 import { hideReplaced, refLine, REFST } from '@/lib/status';
 import type { Participant, PEvent } from '@/lib/types';
 
@@ -41,19 +41,19 @@ function Peserta() {
   return (
     <>
       <div className="head">
-        <div><h1>Peserta</h1><p>Semua calon peserta yang Anda daftarkan. Ketuk nama untuk melihat detailnya.</p></div>
-        <div className="head-actions"><Link className="btn btn-1" href="/daftar/"><Icon id="i-plus" />Daftarkan peserta</Link></div>
+        <div><h1>Nomor</h1><p>Semua nomor yang Anda daftarkan. Ketuk nama untuk melihat detailnya.</p></div>
+        <div className="head-actions"><Link className="btn btn-1" href="/daftar/"><Icon id="i-plus" />Daftarkan nomor</Link></div>
       </div>
       <section className="card">
         <div className="card-pad grid" style={{ gap: 'var(--s3)' }}>
-          <Field id="q" label="Cari peserta" type="search" placeholder="Nama, email, atau nomor WA" value={q} onChange={(e) => setQ(e.target.value)} />
+          <Field id="q" label="Cari nomor" type="search" placeholder="Nama, email, atau nomor WA" value={q} onChange={(e) => setQ(e.target.value)} />
           <div className="chips" role="group" aria-label="Saring">
             {(Object.keys(NAMES) as F[]).map((k) => <button key={k} type="button" className="chip" aria-pressed={f === k} onClick={() => setF(k)}>{NAMES[k]}<small>{all.filter(groups[k]).length}</small></button>)}
           </div>
         </div>
         <div className="list" style={{ borderTop: '1px dashed var(--line)' }}>
           {list.isLoading ? <Skeleton /> : rows.length ? rows.map((p) => <PRow key={p.id} p={p} c={cOf(p.id)} />)
-            : <Empty>{q ? 'Tidak ada peserta dengan nama atau nomor itu.' : f === 'rejected' ? 'Tidak ada peserta yang ditolak.' : all.length ? 'Belum ada peserta di sini.' : 'Belum ada peserta. Tekan Daftarkan peserta untuk memulai.'}</Empty>}
+            : <Empty>{q ? 'Tidak ada nomor dengan nama atau nomor itu.' : f === 'rejected' ? 'Tidak ada nomor yang ditolak.' : all.length ? 'Belum ada nomor di sini.' : 'Belum ada nomor. Tekan Daftarkan nomor untuk memulai.'}</Empty>}
         </div>
         {list.hasNextPage && <div className="card-pad" style={{ textAlign: 'center' }}><button className="btn btn-3" disabled={list.isFetchingNextPage} onClick={() => list.fetchNextPage()}>{list.isFetchingNextPage ? 'Memuat…' : 'Tampilkan lebih banyak'}</button></div>}
       </section>
@@ -89,13 +89,18 @@ function Detail({ id, onClose }: { id: string; onClose: () => void }) {
               <p className="line-t">{refLine(p, c)}</p>
               {p.status === 'rejected' && <Link className="btn btn-1" href={`/daftar/?fix=${p.id}`}>Perbaiki dan kirim lagi</Link>}
               {p.entry_state === 'active' && p.scheduled_day === tomorrow && (
-                <a className="btn wa" href={waLink(p.wa, `Halo ${p.name.split(' ')[0]}, jangan lupa besok ${fmtDL(tomorrow)} jam ${fmtT(p.scheduled_time)} ya.`)} target="_blank" rel="noopener noreferrer"><Icon id="i-chat" />Ingatkan peserta</a>
+                <div className="head-actions">
+                  <Link className="btn btn-1" href="/besok/">Konfirmasi besok</Link>
+                  <a className="btn wa" href={waLink(p.wa, `Halo ${p.name.split(' ')[0]}, besok ${fmtDL(tomorrow)} jam ${fmtT(p.scheduled_time)} nomor kamu dipakai ya. Tolong siapkan HP-nya.`)} target="_blank" rel="noopener noreferrer"><Icon id="i-chat" />Chat pemilik</a>
+                </div>
               )}
             </section>
             <section className="card card-pad grid" style={{ gap: 'var(--s3)' }}>
               <div className="kv"><span>Nomor WhatsApp</span><span className="num">{p.wa}</span></div>
               <div className="kv"><span>Email</span><span>{p.email}</span></div>
-              <div className="kv"><span>Bisa kapan</span><span>{p.avail_date ? fmtDL(p.avail_date) : 'Kapan saja'}{p.avail_time ? `, jam ${fmtT(p.avail_time)}` : ''}</span></div>
+              <div className="kv"><span>Bisa hari</span><span>{fmtDays(p.avail_days)}</span></div>
+              <div className="kv"><span>Bisa mulai</span><span>{p.avail_date ? fmtDL(p.avail_date) : 'Kapan saja'}{p.avail_time ? `, jam ${fmtT(p.avail_time)}` : ''}</span></div>
+              <div className="kv"><span>Password akun</span><span>{p.has_password ? 'Tersimpan' : 'Tidak ada'}</span></div>
               <div className="kv"><span>Didaftarkan</span><span>{fmtDL(p.entered_on)}</span></div>
               {p.notes && <div className="kv"><span>Catatan</span><span>{p.notes}</span></div>}
             </section>

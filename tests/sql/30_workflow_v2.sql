@@ -239,6 +239,8 @@ reset role;
 
 -- ---------------------------------------------------------------- anon can call none of it
 set role anon;
+select t.eq((ref.public_info() ->> 'commission')::bigint, 75000::bigint, 'public page can read the commission');
+select t.eq((select array_agg(k order by k) from jsonb_object_keys(ref.public_info()) k), array['admin_wa','commission','confirm_deadline','payout_hours','withdraw_min'], 'and nothing else');
 select t.expect_error($$select ref.set_setting('daily_target', '30')$$, '42501');
 select t.expect_error($$select ref.confirm_my_day(current_date + 2, array[]::uuid[], array[]::uuid[], null)$$, '42501');
 select t.expect_error($$select ref.reveal_participant_password(gen_random_uuid())$$, '42501');

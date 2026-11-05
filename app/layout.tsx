@@ -4,7 +4,7 @@ import { Providers } from '@/components/Shell';
 
 export const metadata: Metadata = {
   title: 'CodePave Referral',
-  description: 'Daftarkan peserta, lihat jadwal dan statusnya, dan tarik komisi Anda.',
+  description: 'Daftarkan nomor, lihat jadwal dan statusnya, dan tarik komisi Anda.',
   robots: { index: false, follow: false },
 };
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#0B1F24' };

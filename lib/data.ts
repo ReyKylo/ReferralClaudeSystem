@@ -6,20 +6,21 @@
  */
 import { useInfiniteQuery, useQuery, type QueryClient } from '@tanstack/react-query';
 import { ref } from './supabase';
-import type { Commission, Me, Notification, Participant, PEvent, Settings, Wallet, Withdrawal } from './types';
+import type { Commission, Entry, Me, Notification, Participant, PEvent, PublicInfo, Settings, Wallet, Withdrawal } from './types';
+import { todayWIB } from './format';
 
 export const PAGE = 50;
 export const queryDefaults = { queries: { staleTime: 60_000, gcTime: 10 * 60_000, refetchOnWindowFocus: false, refetchOnReconnect: false, retry: 1 } } as const;
 export const refreshAll = (qc: QueryClient) => qc.invalidateQueries({ refetchType: 'active' });
 const must = <T,>(r: { data: unknown; error: unknown }): T => { if (r.error) throw r.error; return r.data as T; };
 
-const P_COLS = 'id,name,wa,wa_norm,email,cloud_ref,avail_date,avail_time,notes,status,reject_reason,entered_on,created_at,scheduled_day,scheduled_time,entry_state,confirmation';
+const P_COLS = 'id,name,wa,wa_norm,email,cloud_ref,avail_date,avail_time,notes,status,reject_reason,entered_on,created_at,scheduled_day,scheduled_time,entry_state,confirmation,entry_id,avail_days,has_password';
 
 /** The signed-in referral's own row, or null when the login is not (or no longer) an active referral. */
 export function useMe(enabled: boolean) {
   return useQuery({
     queryKey: ['me'], enabled,
-    queryFn: async () => must<Me | null>(await ref().from('referrers').select('id,name,username,wa,payout_method,payout_account,payout_name').maybeSingle()),
+    queryFn: async () => must<Me | null>(await ref().from('referrers').select('id,name,username,wa,payout_method,payout_account,payout_name,commission_rate').maybeSingle()),
   });
 }
 
@@ -31,9 +32,10 @@ export function useSettings(enabled = true) {
       const get = (k: string) => rows.find((r) => r.key === k)?.value;
       return {
         adminWa: String(get('admin_wa') ?? '6281299323591'), payoutHours: Number(get('payout_hours') ?? 24),
-        commission: Number(get('commission_per_completed') ?? 50000), withdrawMin: Number(get('withdraw_min') ?? 50000),
+        commission: Number(get('commission_per_completed') ?? 75000), withdrawMin: Number(get('withdraw_min') ?? 50000),
         presets: (get('withdraw_presets') as number[] | undefined) ?? [100000, 200000, 300000, 500000],
         loginDomain: String(get('login_email_domain') ?? 'referral.tampilresmi.com'),
+        confirmDeadline: String(get('confirm_deadline') ?? '21:00'),
       } satisfies Settings;
     },
   });
@@ -90,5 +92,29 @@ export function useNotifications() {
   return useQuery({
     queryKey: ['notifications'],
     queryFn: async () => must<Notification[]>(await ref().from('notifications').select('id,kind,data,created_at,read_at').order('created_at', { ascending: false }).limit(PAGE)),
+  });
+}
+
+/** My numbers that are booked from tomorrow on, soonest first (the "Besok" screen and the Beranda card). */
+export function useEntries() {
+  return useQuery({
+    queryKey: ['entries'],
+    queryFn: async () => must<Entry[]>(await ref().from('entry_overview')
+      .select('id,day,start_time,state,confirmation,participant_id,name,wa,status')
+      .eq('state', 'active').gt('day', todayWIB()).order('day').order('start_time').order('name').limit(200)),
+  });
+}
+
+/** Commission per completed number for this referral: their own rate, else the default. */
+export function useRate(me: Me | null | undefined) {
+  const s = useSettings(!!me);
+  return me?.commission_rate ?? s.data?.commission ?? null;
+}
+
+/** Before login (the Cara mulai page): only the few numbers ref.public_info() exposes. */
+export function usePublicInfo() {
+  return useQuery({
+    queryKey: ['public-info'], staleTime: 10 * 60_000,
+    queryFn: async () => must<PublicInfo>(await ref().rpc('public_info')),
   });
 }

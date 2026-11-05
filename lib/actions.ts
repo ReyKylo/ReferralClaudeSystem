@@ -42,12 +42,16 @@ export async function signIn(identifier: string, password: string) {
 }
 export const signOut = () => supabase().auth.signOut();
 
-export interface ParticipantInput { name: string; wa: string; email: string; cloud: string; date: string; time: string; notes: string }
+export interface ParticipantInput { name: string; wa: string; email: string; password: string; days: number[]; cloud: string; date: string; time: string; notes: string }
 export const submitParticipant = (f: ParticipantInput) => call<string>('submit_participant', {
   p_name: f.name, p_wa: f.wa, p_email: f.email, p_cloud_ref: f.cloud || null, p_avail_date: f.date || null,
-  p_avail_time: f.time || null, p_notes: f.notes || null, p_consent_wa: true,
+  p_avail_time: f.time || null, p_notes: f.notes || null, p_consent_wa: true, p_password: f.password, p_avail_days: f.days.length ? f.days : null,
 });
 export const updatePayout = (method: string, account: string, name: string) => call('update_my_payout', { p_method: method, p_account: account, p_name: name });
 export const requestWithdrawal = (amount: number) => call<string>('request_withdrawal', { p_amount: amount });
 export const cancelWithdrawal = (id: string) => call('cancel_my_withdrawal', { p_id: id });
 export const markNotificationsRead = (ids: number[] | null) => call('mark_notifications_read', { p_ids: ids });
+
+/** Answer for my numbers on one day: entry ids that are ready and ids that cannot. The database enforces the 21.00 deadline. */
+export const confirmMyDay = (day: string, ready: string[], notReady: string[], note: string) =>
+  call<{ ready: number; not_ready: number }>('confirm_my_day', { p_day: day, p_ready: ready, p_not_ready: notReady, p_note: note.trim() || null });

@@ -135,6 +135,19 @@ begin
   perform ref.audit('confirmation.set', 'entry', p_entry_id::text, jsonb_build_object('status', p_status));
 end $$;
 
+-- The numbers the public "Cara mulai" page quotes (before login). Only these, nothing else from settings.
+create or replace function ref.public_info()
+returns jsonb language sql stable security definer set search_path = ''
+as $$
+  select jsonb_build_object(
+    'commission', coalesce((select (value #>> '{}')::bigint from ref.settings where key = 'commission_per_completed'), 75000),
+    'withdraw_min', coalesce((select (value #>> '{}')::bigint from ref.settings where key = 'withdraw_min'), 50000),
+    'payout_hours', coalesce((select (value #>> '{}')::int from ref.settings where key = 'payout_hours'), 24),
+    'confirm_deadline', coalesce((select value #>> '{}' from ref.settings where key = 'confirm_deadline'), '21:00'),
+    'admin_wa', coalesce((select value #>> '{}' from ref.settings where key = 'admin_wa'), '6281299323591')
+  )
+$$;
+
 -- ---------------------------------------------------------------- H-1 through the referral
 -- The team opened the WhatsApp chat to a referral: their unanswered numbers for that day become "contacted".
 create or replace function ref.mark_referrer_contacted(p_day date, p_referrer_id uuid)
@@ -547,7 +560,7 @@ left join ref.wallets w on w.referrer_id = r.id;
 -- ---------------------------------------------------------------- grants
 -- New functions get PUBLIC execute by default; anon has schema usage, so close it explicitly.
 revoke execute on function
-  ref.set_setting(text, jsonb), ref.confirm_closed(date), ref.actor_name(uuid),
+  ref.set_setting(text, jsonb), ref.confirm_closed(date), ref.actor_name(uuid), ref.public_info(),
   ref._apply_confirmation(uuid, ref.confirmation_status, text), ref.set_confirmation(uuid, ref.confirmation_status, text),
   ref.mark_referrer_contacted(date, uuid), ref.bulk_confirm(date, uuid, ref.confirmation_status),
   ref.confirm_my_day(date, uuid[], uuid[], text), ref.complete_entries(uuid[], text),
@@ -573,4 +586,6 @@ revoke execute on function ref._apply_confirmation(uuid, ref.confirmation_status
   ref.clean_days(smallint[]) from authenticated;
 
 grant select on ref.participant_overview, ref.entry_overview, ref.referrer_overview to authenticated;
+-- before login the Cara mulai page may read exactly this
+grant execute on function ref.public_info() to anon, authenticated;
 notify pgrst, 'reload schema';

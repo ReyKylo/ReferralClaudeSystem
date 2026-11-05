@@ -5,7 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useMeRow } from '@/components/Shell';
 import { Badge, Field, Icon, Skeleton, useToast, withBusy } from '@/components/ui';
 import { cancelWithdrawal, requestWithdrawal, updatePayout } from '@/lib/actions';
-import { refreshAll, useCommissions, useSettings, useWallet, useWithdrawals } from '@/lib/data';
+import { refreshAll, useCommissions, useRate, useSettings, useWallet, useWithdrawals } from '@/lib/data';
 import { fmtDL, rp, waLink } from '@/lib/format';
 import { errText, ref } from '@/lib/supabase';
 import type { Tone } from '@/lib/status';
@@ -20,6 +20,7 @@ export default function Saldo() {
   const toast = useToast();
   const wallet = useWallet();
   const settings = useSettings();
+  const rate = useRate(me);
   const ws = useWithdrawals();
   const comms = useCommissions();
   const [amt, setAmt] = useState<number | null>(null);
@@ -78,7 +79,7 @@ export default function Saldo() {
   const opts = [...s.presets.filter((v) => v < w.available), w.available].filter((v) => v >= s.withdrawMin);
   return (
     <>
-      <div className="head"><div><h1>Saldo</h1><p>Komisi masuk ke saldo setelah peserta selesai dan dicek tim.</p></div></div>
+      <div className="head"><div><h1>Saldo</h1><p>Komisi masuk ke saldo setelah nomor selesai dan dicek tim.</p></div></div>
 
       {receipt && (
         <section className="receipt" aria-live="polite">
@@ -106,7 +107,7 @@ export default function Saldo() {
         <section className="card card-pad grid">
           <h2>Tarik saldo</h2>
           {w.available < s.withdrawMin ? (
-            <div className="note ic"><Icon id="i-alert" /><span>Saldo bisa ditarik mulai {rp(s.withdrawMin)}. Saldo bertambah setiap peserta Anda selesai dan dicek tim.</span></div>
+            <div className="note ic"><Icon id="i-alert" /><span>Saldo bisa ditarik mulai {rp(s.withdrawMin)}. Saldo bertambah setiap nomor Anda selesai dan dicek tim.</span></div>
           ) : !hasPayout || edit ? (
             <form className="grid" onSubmit={savePayout} noValidate>
               <p className="muted">Ke mana uangnya dikirim?</p>
@@ -144,7 +145,7 @@ export default function Saldo() {
       <details className="more card">
         <summary>Cara kerja komisi</summary>
         <div>
-          <p>Setiap peserta Anda yang selesai memberi komisi {rp(s.commission)}. Tim mengecek dulu, lalu komisinya masuk ke saldo.</p>
+          <p>Setiap nomor Anda yang selesai memberi komisi {rp(rate ?? s.commission)}. Tim mengecek dulu, lalu komisinya masuk ke saldo.</p>
           <p>Saldo bisa ditarik mulai {rp(s.withdrawMin)}. Setelah mengajukan, kirim detailnya ke WhatsApp admin. Uang masuk ke rekening, VA, atau e-wallet Anda paling lambat 1x{s.payoutHours} jam, dan buktinya muncul di Riwayat.</p>
           <div><a className="btn wa" href={waLink(s.adminWa, 'Halo admin, saya mau tanya soal saldo referral saya.')} target="_blank" rel="noopener noreferrer"><Icon id="i-chat" />Tanya admin</a></div>
         </div>
@@ -171,7 +172,7 @@ export default function Saldo() {
 
       {(comms.data ?? []).length > 0 && (
         <details className="more card">
-          <summary>Asal komisi ({comms.data!.length} peserta)</summary>
+          <summary>Asal komisi ({comms.data!.length} nomor)</summary>
           <div className="list" style={{ padding: 0 }}>
             {comms.data!.map((c) => (
               <div className="row" key={c.id}>

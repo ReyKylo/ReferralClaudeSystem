@@ -38,7 +38,7 @@ export default function Notifikasi() {
               </button>
             ))}
           </div>
-        ) : <Empty icon="i-bell">Belum ada notifikasi. Kabar soal peserta dan saldo Anda akan muncul di sini.</Empty>}
+        ) : <Empty icon="i-bell">Belum ada notifikasi. Kabar soal nomor dan saldo Anda akan muncul di sini.</Empty>}
       </section>
     </>
   );

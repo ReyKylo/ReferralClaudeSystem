@@ -8,14 +8,14 @@ import type { Session } from '@supabase/supabase-js';
 import { supabase, errText } from '@/lib/supabase';
 import { queryDefaults, refreshAll, useMe, useNotifications } from '@/lib/data';
 import { registerMe, signOut } from '@/lib/actions';
-import { waLink, waOk } from '@/lib/format';
+import { safeNext, waLink, waOk } from '@/lib/format';
 import type { Me } from '@/lib/types';
 import { Logo } from './Logo';
 import { Field, Icon, Icons, ToastProvider, useOnline, useToast, withBusy } from './ui';
 
 const NAV = [
-  { href: '/', label: 'Beranda', icon: 'i-home', match: (p: string) => p === '/' },
-  { href: '/peserta/', label: 'Peserta', icon: 'i-users', match: (p: string) => p.startsWith('/peserta') || p.startsWith('/daftar') },
+  { href: '/', label: 'Beranda', icon: 'i-home', match: (p: string) => p === '/' || p.startsWith('/besok') },
+  { href: '/peserta/', label: 'Nomor', icon: 'i-users', match: (p: string) => p.startsWith('/peserta') || p.startsWith('/daftar') },
   { href: '/saldo/', label: 'Saldo', icon: 'i-wallet', match: (p: string) => p.startsWith('/saldo') },
   { href: '/notifikasi/', label: 'Notifikasi', icon: 'i-bell', match: (p: string) => p.startsWith('/notifikasi') },
 ];
@@ -37,7 +37,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   );
 }
 
-const APP_PATHS = ['/', '/peserta/', '/daftar/', '/saldo/', '/notifikasi/'];
+const APP_PATHS = ['/', '/peserta/', '/daftar/', '/besok/', '/saldo/', '/notifikasi/'];
+// open without an account: sign in and the how-to page
+const OPEN_PATHS = ['/masuk', '/mulai'];
 
 function Gate({ children }: { children: React.ReactNode }) {
   const path = usePathname() || '/';
@@ -45,7 +47,7 @@ function Gate({ children }: { children: React.ReactNode }) {
   const qc = useQueryClient();
   const [session, setSession] = useState<Session | null | undefined>(undefined);
   // the sign-in page and the 404 page work without an account
-  const publicPage = path.startsWith('/masuk') || !APP_PATHS.includes(path.replace(/\/?$/, '/'));
+  const publicPage = OPEN_PATHS.some((p) => path.startsWith(p)) || !APP_PATHS.includes(path.replace(/\/?$/, '/'));
 
   useEffect(() => {
     const sb = supabase();
@@ -56,9 +58,10 @@ function Gate({ children }: { children: React.ReactNode }) {
 
   const me = useMe(!!session);
   useEffect(() => {
-    if (session === null && !publicPage) router.replace('/masuk/' + window.location.search);
-    if (session && publicPage && me.data) router.replace('/');
-  }, [session, publicPage, me.data, router]);
+    // a link from WhatsApp (e.g. /besok/) survives the sign-in page
+    if (session === null && !publicPage) router.replace('/masuk/?next=' + encodeURIComponent(window.location.pathname + window.location.search));
+    if (session && path.startsWith('/masuk') && me.data) router.replace(safeNext(new URLSearchParams(window.location.search).get('next')) ?? '/');
+  }, [session, publicPage, path, me.data, router]);
 
   if (publicPage) return <>{children}</>;
   if (session === undefined || (session && me.isLoading)) return <div className="spin" aria-busy="true">Memuat…</div>;

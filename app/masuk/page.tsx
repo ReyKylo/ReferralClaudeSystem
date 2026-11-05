@@ -1,12 +1,13 @@
 'use client';
 
 import { Suspense, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Logo } from '@/components/Logo';
 import { ADMIN_WA } from '@/components/Shell';
 import { Field, Icon, withBusy } from '@/components/ui';
 import { signIn, signUp, signupAvailable } from '@/lib/actions';
-import { cleanUsername, usernameHint, usernameOk, waLink, waOk } from '@/lib/format';
+import { cleanUsername, safeNext, usernameHint, usernameOk, waLink, waOk } from '@/lib/format';
 import { errText } from '@/lib/supabase';
 
 const DOMAIN = 'referral.tampilresmi.com'; // = ref.settings.login_email_domain (settings are not readable before login)
@@ -65,7 +66,7 @@ function Masuk() {
         if (reg) await signUp(cleanUsername(user), wa, pw, DOMAIN, invite);
         else await signIn(id, pw);
         try { localStorage.setItem('cp-has-account', '1'); } catch { /* storage blocked */ }
-        router.replace('/');
+        router.replace(safeNext(params.get('next')) ?? '/');
       } catch (er) {
         const m = errText(er);
         if (reg && /already registered|already exists/i.test(m)) setErr({ user: 'Nama pengguna ini sudah dipakai. Coba tambah angka di belakangnya.' });
@@ -124,6 +125,7 @@ function Masuk() {
               )}
             </div>
           )}
+          <p className="meta-t">Baru di sini? <Link className="btn-link" href="/mulai/">Lihat cara mulai</Link></p>
         </section>
       </div>
     </div>
