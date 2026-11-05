@@ -25,7 +25,7 @@ reset role;
 
 select set_config('request.jwt.claim.sub', :'u1', false); set role authenticated;
 select t.eq(ref.my_role(), null::text, 'fresh login has no role yet');
-select t.expect_error($$select ref.submit_participant('X', '0813-1', 'x@x.id', null, null, null, null, true)$$, '42501');
+select t.expect_error($$select ref.submit_participant('X', '0813-1', 'x@x.id', null, null, null, null, true, 'pw123456')$$, '42501');
 select t.expect_error($$select ref.register_me('orang_lain', '0857-1234-5678')$$, '22023');  -- username must match the login
 select t.expect_error($$select ref.register_me('budi_ref', '0812-1111-1111')$$, '23505');    -- number used by Gipong
 select t.expect_error($$select ref.register_me('budi_ref', '123')$$, '22023');
@@ -35,7 +35,7 @@ select t.eq(ref.register_me('budi_ref', '0857-1234-5678'), ref.my_referrer_id(),
 select t.eq((select username::text from ref.referrers), 'budi_ref', 'sees only own referrer row, username lowercased');
 select t.eq((select count(*) from ref.participants), 0::bigint, 'new referral sees no one else');
 select t.eq((select count(*) from erp.profiles), 0::bigint, 'new referral sees no ERP data');
-select ref.submit_participant('Peserta Budi', '0813-7777-0001', 'pb1@mail.id', null, null, null, null, true);
+select ref.submit_participant('Peserta Budi', '0813-7777-0001', 'pb1@mail.id', null, null, null, null, true, 'pw123456');
 select t.eq((select count(*) from ref.notifications where kind = 'friend_joined'), 0::bigint, 'no friend yet');
 select ref.update_my_profile('Budi Santoso', '0857-1234-5678');
 reset role;

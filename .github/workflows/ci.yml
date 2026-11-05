@@ -35,3 +35,26 @@ jobs:
       # The ERP repository is private, so CI uses the small ERP stub in tests/sql/01_erp_stub.sql.
       - name: Migrate and test
         run: bash tests/sql/run.sh
+
+  portal:
+    name: Portal typecheck, build and e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npx playwright install --with-deps chromium
+      # Builds the static export against the in-memory mock (tests/e2e/mock-supabase.mjs) and clicks through it on a
+      # phone and a desktop viewport. No real Supabase, no secrets.
+      - run: npm run test:e2e
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7
