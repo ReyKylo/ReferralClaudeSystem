@@ -2,7 +2,7 @@
 
 Dokumen ini menerjemahkan PRD *Referral Management & Daily Operations System* menjadi rencana yang bisa langsung dikerjakan.
 Status: **fondasi database selesai dan sudah dites** (`supabase/migrations/20261104120000_ref_init.sql`, tes di `tests/sql/`).
-Migrasinya **belum dipasang** ke Supabase. Wireframe interaktif ada di `wireframe/index.html` (buka langsung di browser).
+Migrasinya **sudah dipasang** ke Supabase (project `vfttmslrjimbndseqqko`, 5 Nov 2026). Wireframe interaktif ada di `wireframe/index.html` (buka langsung di browser).
 
 Prinsip PRD: *One Referral Portal. One Central Database. One Internal ERP.*
 
@@ -134,7 +134,9 @@ Angka dashboard harian (PRD bagian 7) per tanggal dari `ref.calendar`:
 
 Status hari: Planned, Incomplete, Not Planned, Off (target 0).
 
-### Cara memasang (setelah owner setuju)
+### Cara memasang
+
+**Status 5 Nov 2026:** ketiga migrasi sudah terpasang, dan `ref` sudah masuk Exposed schemas. Advisor keamanan tidak menemukan apa pun dari schema `ref`. Yang masih harus dilakukan owner di dashboard ada di langkah 3.
 
 1. Jalankan `supabase/migrations/20261104120000_ref_init.sql` di project `vfttmslrjimbndseqqko` (lewat MCP `apply_migration` atau SQL Editor).
    Migrasi ini otomatis menambahkan `ref` ke Exposed schemas.

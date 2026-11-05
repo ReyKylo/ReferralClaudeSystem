@@ -1,5 +1,5 @@
 -- Referral Claude System: database for the Referral Portal and the referral screens inside ERP Claude Kita.
--- STATUS: NOT applied yet. Apply only after the owner agrees (docs/PLAN.md section 4).
+-- STATUS: applied to the Supabase project vfttmslrjimbndseqqko on 2026-11-05 (owner agreed).
 --
 -- One central database: this lives in the same Supabase project as the ERP (vfttmslrjimbndseqqko), in its own schema
 -- `ref`, and needs the `erp` schema (erp.today, erp.normalize_wa, erp.profiles, erp.accounts) to exist first.

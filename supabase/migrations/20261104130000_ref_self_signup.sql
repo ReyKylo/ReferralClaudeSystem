@@ -1,6 +1,6 @@
 -- Self sign-up for referrals: anyone can make a portal login with username + WhatsApp number + password,
 -- no email and no verification step.
--- STATUS: NOT applied yet (together with 20261104120000_ref_init.sql).
+-- STATUS: applied to the Supabase project vfttmslrjimbndseqqko on 2026-11-05 (owner agreed).
 --
 -- How it works
 --   Supabase Auth needs an email, so the portal turns the username into a login address that never receives mail:

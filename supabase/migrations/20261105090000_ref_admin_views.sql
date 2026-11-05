@@ -1,5 +1,5 @@
 -- Read models for the referral screens inside ERP Claude Kita (admin and operations).
--- STATUS: NOT applied yet (together with the two earlier ref migrations).
+-- STATUS: applied to the Supabase project vfttmslrjimbndseqqko on 2026-11-05 (owner agreed).
 -- All views are security_invoker, so the RLS of ref.* decides what each role sees.
 
 -- Withdrawal requests with who asked and where to send the money.

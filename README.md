@@ -8,7 +8,7 @@ referral. Semuanya memakai satu database dengan ERP (Supabase, schema `ref`).
 
 - `wireframe/index.html` berisi wireframe interaktif dengan tampilan CodePave. Dibuka di layar Daftar/Masuk; pilih "Lihat sebagai" untuk berganti ke portal referral, admin, atau tim operasional. Datanya contoh dan tidak tersimpan.
 - `docs/PLAN.md` berisi rencana lengkap: arsitektur, peran, alur status, database, layar, fase, dan pertanyaan terbuka.
-- `supabase/migrations/` berisi skema `ref` untuk semua fase. **Belum dipasang** ke Supabase.
+- `supabase/migrations/` berisi skema `ref` untuk semua fase. Sudah dipasang ke Supabase pada 5 Nov 2026.
 - `supabase/create-referrer.sql` berisi template untuk membuat login referral.
 - `tests/sql/` berisi tes database: alur penuh sebagai owner, staff, dan dua referral dengan RLS aktif.
 
