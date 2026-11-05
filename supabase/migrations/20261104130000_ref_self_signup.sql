@@ -12,9 +12,17 @@
 -- ERP safety: a self-made login has no row in erp.profiles, so the ERP's RLS shows it nothing (tested), and
 -- ref.register_me() refuses ERP logins.
 
-insert into ref.settings (key, value) values ('login_email_domain', '"referral.tampilresmi.com"');
+insert into ref.settings (key, value) values
+  ('login_email_domain', '"referral.tampilresmi.com"'),
+  -- owner's WhatsApp: forgot password, questions, and every withdrawal request (the referral sends rekening/VA there)
+  ('admin_wa', '"6281299323591"'),
+  -- promised payout time after the WhatsApp message, shown to referrals
+  ('payout_hours', '24');
 
 alter table ref.referrers add column username extensions.citext;
+-- Who invited this referral ("Ajak teman"). Recorded only; no commission is attached to inviting.
+alter table ref.referrers add column invited_by uuid references ref.referrers (id);
+create index referrers_invited_by_idx on ref.referrers (invited_by) where invited_by is not null;
 alter table ref.referrers add constraint referrers_username_format check (username is null or username ~ '^[a-z0-9_.]{3,20}$');
 create unique index referrers_username_key on ref.referrers (username) where username is not null;
 
@@ -51,8 +59,9 @@ as $$
   limit 1
 $$;
 
--- Called once right after signUp(). Makes the logged-in user a referral.
-create or replace function ref.register_me(p_username text, p_wa text)
+-- Called once right after signUp(). Makes the logged-in user a referral. p_invite = the inviter's username from the
+-- invite link (?ajak=gipong); unknown or own usernames are ignored rather than blocking the sign-up.
+create or replace function ref.register_me(p_username text, p_wa text, p_invite text default null)
 returns uuid language plpgsql security definer set search_path = ''
 as $$
 declare
@@ -78,9 +87,14 @@ begin
   if exists (select 1 from ref.referrers where wa_norm = erp.normalize_wa(p_wa)) then
     raise exception 'Nomor WhatsApp ini sudah dipakai referral lain' using errcode = '23505';
   end if;
-  insert into ref.referrers (user_id, name, username, wa) values (v_user, v_name, v_name, trim(p_wa)) returning id into v_id;
-  perform ref.audit('referrer.signup', 'referrer', v_id::text, jsonb_build_object('username', v_name));
-  perform ref.notify_admins('new_referrer', jsonb_build_object('referrer_id', v_id, 'username', v_name));
+  insert into ref.referrers (user_id, name, username, wa, invited_by)
+  values (v_user, v_name, v_name, trim(p_wa),
+          (select r.id from ref.referrers r where r.active and r.username = ref.clean_username(p_invite)::extensions.citext and r.username <> v_name::extensions.citext))
+  returning id into v_id;
+  perform ref.audit('referrer.signup', 'referrer', v_id::text, jsonb_build_object('username', v_name, 'invite', p_invite));
+  perform ref.notify_admins('new_referrer', jsonb_build_object('referrer_id', v_id, 'username', v_name,
+          'invited_by', (select r.name from ref.referrers r join ref.referrers me on me.invited_by = r.id where me.id = v_id)));
+  perform ref.notify_referrer((select invited_by from ref.referrers where id = v_id), 'friend_joined', jsonb_build_object('username', v_name));
   return v_id;
 end $$;
 
@@ -111,9 +125,9 @@ begin
   perform ref.audit(case when p_active then 'referrer.activate' else 'referrer.deactivate' end, 'referrer', p_id::text);
 end $$;
 
-revoke execute on function ref.clean_username(text), ref.signup_available(text, text), ref.login_email(text), ref.register_me(text, text),
+revoke execute on function ref.clean_username(text), ref.signup_available(text, text), ref.login_email(text), ref.register_me(text, text, text),
   ref.update_my_profile(text, text), ref.set_referrer_active(uuid, boolean) from public;
-grant execute on function ref.clean_username(text), ref.register_me(text, text), ref.update_my_profile(text, text),
+grant execute on function ref.clean_username(text), ref.register_me(text, text, text), ref.update_my_profile(text, text),
   ref.set_referrer_active(uuid, boolean), ref.signup_available(text, text), ref.login_email(text) to authenticated;
 -- The sign-up and log-in forms run before login: anon may call only these two. No table is readable by anon.
 grant usage on schema ref to anon;

@@ -36,13 +36,14 @@ select t.eq((select username::text from ref.referrers), 'budi_ref', 'sees only o
 select t.eq((select count(*) from ref.participants), 0::bigint, 'new referral sees no one else');
 select t.eq((select count(*) from erp.profiles), 0::bigint, 'new referral sees no ERP data');
 select ref.submit_participant('Peserta Budi', '0813-7777-0001', 'pb1@mail.id', null, null, null, null, true);
+select t.eq((select count(*) from ref.notifications where kind = 'friend_joined'), 0::bigint, 'no friend yet');
 select ref.update_my_profile('Budi Santoso', '0857-1234-5678');
 reset role;
 
 select set_config('request.jwt.claim.sub', :'u2', false); set role authenticated;
 select t.eq((ref.signup_available('budi_ref', '0857-1234-5678') ->> 'username_free')::boolean, false, 'username now taken');
 select t.expect_error($$select ref.register_me('sari.ref', '+62 857 1234 5678')$$, '23505');  -- same number, other format
-select ref.register_me('sari.ref', '0857-9999-0000');
+select ref.register_me('sari.ref', '0857-9999-0000', 'BUDI_REF');
 reset role;
 
 -- ERP staff cannot turn their login into a referral
@@ -54,6 +55,10 @@ reset role;
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000a', false); set role authenticated;
 select t.eq((select count(*) from ref.referrers where username is not null), 2::bigint, 'admin sees self-made referrals');
 select t.eq((select count(*) from ref.notifications where kind = 'new_referrer'), 2::bigint, 'admin notified');
+select t.eq((select invited_by_name from ref.referrer_overview where username = 'sari.ref'), 'Budi Santoso', 'invite recorded');
+select t.eq((select invited_count from ref.referrer_overview where username = 'budi_ref'), 1::bigint, 'inviter count');
+select t.eq((select invited_by_name from ref.referrer_overview where username = 'budi_ref'), null::text, 'no invite');
+select t.eq((select (value #>> '{}') from ref.settings where key = 'admin_wa'), '6281299323591', 'admin WhatsApp setting');
 select ref.set_referrer_active((select id from ref.referrers where username = 'sari.ref'), false);
 reset role;
 select set_config('request.jwt.claim.sub', :'u2', false); set role authenticated;

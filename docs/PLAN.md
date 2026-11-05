@@ -233,3 +233,14 @@ Database sudah mencakup fase 1 sampai 4, jadi fase berikutnya hanya membangun la
 - Tanpa email, "lupa password" tidak bisa dilakukan sendiri. Admin mengganti password di Authentication → Users. Nanti ini bisa
   dibuat sebagai tombol di ERP lewat fungsi server.
 - Sesi login memakai Supabase Auth (cookie, refresh token). Batas waktu sesi bisa diatur di Authentication → Sessions (paket Pro).
+
+## 9. Keputusan owner (5 Nov 2026)
+
+| Topik | Keputusan |
+|---|---|
+| Tarik saldo | Setelah mengajukan, referral menekan **Kirim ke WhatsApp admin** (0812-9932-3591) yang berisi jumlah, nomor permintaan, dan norek/VA. Uang ditransfer paling lambat **1x24 jam** (`settings.payout_hours`) |
+| Nomor admin | `settings.admin_wa = 6281299323591`. Dipakai untuk lupa password, tanya admin, dan tarik saldo |
+| Email peserta | Tetap wajib |
+| Ajak teman | Referral bisa mengajak orang lain jadi referral lewat link `referral.tampilresmi.com/daftar?ajak=<username>`. Tercatat di `referrers.invited_by`, pengajak dapat notifikasi. **Belum ada komisi untuk mengajak.** Kalau perlu, tentukan nominalnya |
+| Tampilan | Gaya CodePave (wireframe ini) jadi acuan, termasuk untuk layar referral di ERP |
+| Admin | Layar admin dan tim ada di repo **ERPClaudeKita** (menu Referral) |

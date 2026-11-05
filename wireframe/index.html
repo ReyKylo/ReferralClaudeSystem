@@ -404,7 +404,7 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 const normWa = (raw) => { const d = String(raw || '').replace(/\D/g, ''); return !d ? '' : d.startsWith('0') ? '62' + d.slice(1) : d.startsWith('8') ? '62' + d : d; };
 
 // ---------------------------------------------------------------- settings (ref.settings)
-const S = { adminWa: '0812-9000-1000', dailyTarget: 20, commission: 50000, presets: [100000, 200000, 300000, 500000], withdrawMin: 50000,
+const S = { adminWa: '0812-9932-3591', payoutHours: 24, portal: 'referral.tampilresmi.com', dailyTarget: 20, commission: 50000, presets: [100000, 200000, 300000, 500000], withdrawMin: 50000,
   waTemplate: 'Halo {name}, kami dari tim Claude Kita. Mau memastikan jadwal Anda besok, {date} jam {time}. Apakah Anda tersedia? Balas YA atau TIDAK. Terima kasih.' };
 
 // ---------------------------------------------------------------- sample data
@@ -702,8 +702,9 @@ function signUp(user, wa, pw) {
   if (!wa.trim()) err['a-wa'] = 'Isi nomor WhatsApp dulu.'; else if (!c.wa) err['a-wa'] = c.waMsg;
   if (String(pw || '').length < 6) err['a-pw'] = 'Password minimal 6 huruf atau angka.';
   if (Object.keys(err).length) { const e = new Error('form'); e.fields = err; throw e; }
-  const u = user.trim().toLowerCase(), r = { id: 'r' + (REF.length + 1), name: u, username: u, pw, wa: wa.trim(), payout: null };
-  REF.push(r); pushN('admin', `Referral baru mendaftar: ${u}`); pushN(r.id, 'Akun Anda sudah aktif. Mulai dengan menekan Daftarkan peserta di Beranda.');
+  const u = user.trim().toLowerCase(), inviter = st.invite && REF.find((x) => x.username === st.invite);
+  const r = { id: 'r' + (REF.length + 1), name: u, username: u, pw, wa: wa.trim(), payout: null, invitedBy: inviter ? inviter.id : null };
+  REF.push(r); pushN('admin', inviter ? `Referral baru mendaftar: ${u}, diajak ${inviter.name}` : `Referral baru mendaftar: ${u}`); if (inviter) pushN(inviter.id, `${u} sudah daftar lewat link ajak Anda`); pushN(r.id, 'Akun Anda sudah aktif. Mulai dengan menekan Daftarkan peserta di Beranda.');
   return r;
 }
 function signIn(id, pw) {
@@ -725,7 +726,8 @@ function vMasuk() {
       ${e.form ? `<div class="note ic err" role="alert">${icon('i-alert')}<span>${esc(e.form)}</span></div>` : ''}`;
   return `<section class="card card-pad grid" style="gap:var(--s5)">
     <div class="grid" style="gap:var(--s2)"><h1>${reg ? 'Buat akun referral' : 'Masuk ke akun Anda'}</h1>
-      <p class="muted">${reg ? 'Cukup nama pengguna, nomor WhatsApp, dan password. Tidak perlu email, langsung bisa dipakai.' : 'Pakai nama pengguna atau nomor WhatsApp yang Anda daftarkan.'}</p></div>
+      <p class="muted">${reg ? 'Cukup nama pengguna, nomor WhatsApp, dan password. Tidak perlu email, langsung bisa dipakai.' : 'Pakai nama pengguna atau nomor WhatsApp yang Anda daftarkan.'}</p>
+      ${reg && st.invite ? `<div class="note ic">${icon('i-users')}<span>Anda diajak oleh <b>${esc(st.invite)}</b>.</span></div>` : ''}</div>
     <div class="seg full" role="group" aria-label="Pilih daftar atau masuk"><button type="button" data-auth="daftar" aria-pressed="${reg}">Daftar baru</button><button type="button" data-auth="masuk" aria-pressed="${!reg}">Masuk</button></div>
     <form id="authForm" class="grid" novalidate>
       ${form}
@@ -733,8 +735,8 @@ function vMasuk() {
     </form>
     ${reg ? '' : `<div><button type="button" class="btn-link" id="forgot" aria-expanded="${st.forgot}">Lupa password?</button>
       ${st.forgot ? `<div class="grid" style="gap:var(--s3);margin-top:var(--s2)"><p class="meta-t">Chat admin di WhatsApp dan sebutkan nomor WhatsApp Anda. Admin akan membuatkan password baru.</p>
-        <div><a class="btn wa" href="${waTo(S.adminWa, 'Halo admin, saya lupa password akun referral saya.')}" target="_blank" rel="noopener">${icon('i-chat')}Chat admin</a></div><p class="meta-t">Nomor admin: <span class="mono">${esc(S.adminWa)}</span> (contoh)</p></div>` : ''}</div>`}
-    <p class="proto">Wireframe: coba masuk dengan <b>gipong</b> atau <b>0812-1111-1111</b>, password <b>demo1234</b>.</p>
+        <div><a class="btn wa" href="${waTo(S.adminWa, 'Halo admin, saya lupa password akun referral saya.')}" target="_blank" rel="noopener">${icon('i-chat')}Chat admin</a></div><p class="meta-t">Nomor admin: <span class="num">${esc(S.adminWa)}</span></p></div>` : ''}</div>`}
+    <p class="proto">Wireframe: coba masuk dengan <b>gipong</b> atau <b>0812-1111-1111</b>, password <b>demo1234</b>. ${st.invite ? '' : '<button type="button" class="btn-link" id="tryInvite">Buka seperti dari link ajak gipong</button>'}</p>
   </section>`;
 }
 
@@ -750,6 +752,10 @@ function vBeranda() {
   <button type="button" class="btn btn-1 btn-block" data-go="daftar">${icon('i-plus')}Daftarkan peserta</button>
   <section class="card"><button type="button" class="row" data-go="saldo" aria-label="Saldo bisa ditarik ${rp(w.available)}. Buka Saldo"><div class="money"><span class="label">Saldo bisa ditarik</span><span class="big">${rp(w.available)}</span>${w.pending ? `<span class="meta-t">${rp(w.pending)} lagi sedang dicek tim</span>` : ''}<span class="btn-link" style="min-height:0;padding:0;margin-top:var(--s2)">Tarik saldo</span></div>${icon('i-chev', 'go')}</button></section>
   ${shown.length ? `<section class="card"><div class="card-head"><h2>Perlu perhatian</h2>${attn.length > shown.length ? `<button type="button" class="btn-link" data-pfgo="attn">Lihat semua (${attn.length})</button>` : ''}</div><div class="list">${shown.join('')}</div></section>` : ''}
+  ${(() => { const me = REF.find((x) => x.id === ME), link = `${S.portal}/daftar?ajak=${me.username}`, friends = REF.filter((x) => x.invitedBy === ME).length;
+    return `<section class="card card-pad grid" style="gap:var(--s3)"><h2>Ajak teman jadi referral</h2><p class="meta-t">Kirim link ini ke teman. Mereka daftar sendiri dan punya akun referral sendiri.${friends ? ` Sudah ${friends} teman daftar lewat link Anda.` : ''}</p>
+      <div class="pw"><input class="input num" id="inviteLink" readonly value="${esc(link)}" aria-label="Link ajak Anda"><button type="button" class="btn btn-3" id="copyInvite">Salin</button></div>
+      <div><a class="btn wa" href="https://wa.me/?text=${encodeURIComponent(`Yuk jadi referral CodePave. Daftarnya cuma pakai nama pengguna, nomor WhatsApp, dan password: https://${link}`)}" target="_blank" rel="noopener">${icon('i-chat')}Bagikan lewat WhatsApp</a></div></section>`; })()}
   <section class="card"><div class="card-head"><h2>Peserta terbaru</h2>${mine.length > 5 ? '<button type="button" class="btn-link" data-go="peserta">Lihat semua</button>' : ''}</div>
     ${mine.length ? `<div class="list">${mine.slice(0, 5).map(pRow).join('')}</div>` : `<div class="empty">${icon('i-users')}<b>Belum ada peserta</b><span>Daftarkan calon peserta pertama Anda. Setelah dicek tim, statusnya muncul di sini.</span></div>`}
   </section>`;
@@ -814,7 +820,7 @@ function vSaldo() {
     tarik = `<form id="payForm" class="grid" novalidate><p class="muted">Ke mana uangnya dikirim?</p>
       <label class="field" for="pay-m"><span>Bank atau e-wallet</span><select class="input" id="pay-m" ${pe['pay-m'] ? 'aria-invalid="true" aria-describedby="pay-m-h"' : ''}><option value="">Pilih…</option>${['BCA', 'BRI', 'BNI', 'Mandiri', 'BSI', 'CIMB Niaga', 'Permata', 'DANA', 'GoPay', 'OVO', 'ShopeePay'].map((b) => `<option ${st.payBank === b || (!st.payBank && r.payout?.method === b) ? 'selected' : ''}>${b}</option>`).join('')}<option value="lain" ${st.payBank === 'lain' || (r.payout && !['BCA', 'BRI', 'BNI', 'Mandiri', 'BSI', 'CIMB Niaga', 'Permata', 'DANA', 'GoPay', 'OVO', 'ShopeePay'].includes(r.payout.method) && !st.payBank) ? 'selected' : ''}>Lainnya</option></select>${pe['pay-m'] ? `<span class="help bad" id="pay-m-h">${esc(pe['pay-m'])}</span>` : ''}</label>
       ${st.payBank === 'lain' || (r.payout && !['BCA', 'BRI', 'BNI', 'Mandiri', 'BSI', 'CIMB Niaga', 'Permata', 'DANA', 'GoPay', 'OVO', 'ShopeePay'].includes(r.payout.method) && !st.payBank) ? fld('pay-o', 'Nama bank atau e-wallet lain', { value: r.payout && !['BCA', 'BRI', 'BNI', 'Mandiri', 'BSI', 'CIMB Niaga', 'Permata', 'DANA', 'GoPay', 'OVO', 'ShopeePay'].includes(r.payout.method) ? r.payout.method : '', err: pe['pay-o'] }) : ''}
-      ${fld('pay-a', 'Nomor rekening atau nomor HP', { inputmode: 'numeric', value: r.payout?.account, err: pe['pay-a'] })}
+      ${fld('pay-a', 'Nomor rekening, VA, atau nomor e-wallet', { inputmode: 'numeric', value: r.payout?.account, err: pe['pay-a'] })}
       ${fld('pay-n', 'Nama pemilik rekening', { value: r.payout?.name, err: pe['pay-n'], help: 'Sesuai nama di bank atau e-wallet.' })}
       <div class="head-actions"><button type="submit" class="btn btn-2">Simpan rekening</button>${r.payout ? '<button type="button" class="btn btn-3" id="payCancel">Batal</button>' : ''}</div></form>`;
   } else {
@@ -824,14 +830,16 @@ function vSaldo() {
       ${fld('w-custom', 'Atau ketik nominal', { inputmode: 'numeric', placeholder: `Minimal ${rp(S.withdrawMin)}`, value: st.wCustom ? Number(st.wCustom).toLocaleString('id-ID') : '', err: custom ? amtErr : '' })}
       <p class="meta-t">Dikirim ke <b>${esc(r.payout.method)} ${esc(r.payout.account)}</b> a.n. ${esc(r.payout.name)}. </p><div><button type="button" class="btn btn-3 btn-sm" id="payEdit">Ganti rekening</button></div>
       ${st.wConfirm && okAmt ? `<div class="confirm" role="group" aria-label="Konfirmasi tarik saldo"><b>Tarik ${rp(amt)} ke ${esc(r.payout.method)} ${esc(r.payout.account)} a.n. ${esc(r.payout.name)}?</b>
-          <span class="meta-t">Uang ini ditahan dari saldo sampai admin selesai mentransfer.</span>
+          <span class="meta-t">Setelah ini Anda kirim detailnya ke WhatsApp admin. Uang ini ditahan dari saldo sampai admin selesai mentransfer (paling lambat 1x${S.payoutHours} jam).</span>
           <div class="head-actions"><button type="button" class="btn btn-1" id="w-yes">Ya, tarik saldo</button><button type="button" class="btn btn-3" id="w-no">Batal</button></div></div>`
         : `<button type="button" class="btn btn-1 btn-block" id="w-req" ${okAmt ? '' : 'disabled'}>${okAmt ? `Tarik ${rp(amt)}` : 'Pilih nominal dulu'}</button>`}</div>`;
   }
   return head('', 'Saldo', 'Komisi masuk ke saldo setelah peserta selesai dan dicek tim.') + `
   ${rc ? `<section class="receipt" aria-live="polite"><h2>${icon('i-check')}Permintaan tarik saldo terkirim</h2>
       <div class="kv"><span>Nomor</span><span class="mono">${refNo(rc)}</span></div><div class="kv"><span>Jumlah</span><b class="num">${rp(rc.amount)}</b></div><div class="kv"><span>Dikirim ke</span><span>${esc(rc.payout.method)} ${esc(rc.payout.account)}</span></div>
-      <p class="meta-t">Admin akan mentransfer lalu memasang bukti transfernya di Riwayat di bawah. Anda juga dapat notifikasi.</p>
+      <p><b>Langkah terakhir:</b> kirim detail ini ke WhatsApp admin. Uang ditransfer paling lambat 1x${S.payoutHours} jam setelah pesannya terkirim.</p>
+      <div><a class="btn btn-1" id="sendWa" href="${waTo(S.adminWa, `Halo admin, saya ${REF.find((x) => x.id === ME).username} mau tarik saldo ${rp(rc.amount)}.\nNomor permintaan: ${refNo(rc)}\nKirim ke: ${rc.payout.method} ${rc.payout.account} a.n. ${rc.payout.name}`)}" target="_blank" rel="noopener">${icon('i-chat')}Kirim ke WhatsApp admin</a></div>
+      <p class="meta-t">Bukti transfer nanti muncul di Riwayat di bawah, dan Anda dapat notifikasi.</p>
       ${rc.status === 'requested' ? `<div><button type="button" class="btn btn-3 btn-sm" data-wcancel="${rc.id}">Batalkan permintaan ini</button></div>` : ''}</section>` : ''}
   <section class="card card-pad grid" style="gap:var(--s4)">
     <div class="money"><span class="label">Bisa ditarik</span><span class="big">${rp(w.available)}</span></div>
@@ -842,7 +850,7 @@ function vSaldo() {
     </div>
   </section>
   ${rc ? '' : `<section class="card card-pad grid"><h2>Tarik saldo</h2>${tarik}</section>`}
-  <details class="more card"><summary>Cara kerja komisi</summary><div><p>Setiap peserta Anda yang selesai memberi komisi ${rp(S.commission)}. Tim mengecek dulu, lalu komisinya masuk ke saldo.</p><p>Saldo bisa ditarik mulai ${rp(S.withdrawMin)} ke rekening atau e-wallet Anda. Admin mentransfer dan memasang buktinya di Riwayat.</p><div><a class="btn wa" href="${waTo(S.adminWa, 'Halo admin, saya mau tanya soal saldo referral saya.')}" target="_blank" rel="noopener">${icon('i-chat')}Tanya admin</a></div></div></details>
+  <details class="more card"><summary>Cara kerja komisi</summary><div><p>Setiap peserta Anda yang selesai memberi komisi ${rp(S.commission)}. Tim mengecek dulu, lalu komisinya masuk ke saldo.</p><p>Saldo bisa ditarik mulai ${rp(S.withdrawMin)}. Setelah mengajukan, kirim detailnya ke WhatsApp admin. Uang masuk ke rekening, VA, atau e-wallet Anda paling lambat 1x${S.payoutHours} jam, dan buktinya muncul di Riwayat.</p><div><a class="btn wa" href="${waTo(S.adminWa, 'Halo admin, saya mau tanya soal saldo referral saya.')}" target="_blank" rel="noopener">${icon('i-chat')}Tanya admin</a></div></div></details>
   <section class="card"><div class="card-head"><h2>Riwayat tarik saldo</h2></div>
     <div class="list">${mineW.map((x) => `<div class="row"><div class="prow"><div class="prow-top"><b class="num">${rp(x.amount)}</b>${badge(WST[x.status])}</div>
       <span class="meta-t">${fmtDL(x.at)} ke ${esc(x.payout.method)} ${esc(x.payout.account)}</span><span class="meta-t">Nomor permintaan <span class="mono">${refNo(x)}</span></span>
@@ -1150,6 +1158,8 @@ document.addEventListener('click', (ev) => {
   if (d.auth) { st.authTab = d.auth; st.authErr = {}; st.chk = {}; st.forgot = false; render(); return; }
   if (t.id === 'showPw') { st.aPw = document.getElementById('a-pw').value; st.showPw = !st.showPw; render(); document.getElementById('showPw').focus(); return; }
   if (t.id === 'forgot') { st.forgot = !st.forgot; render(); return; }
+  if (t.id === 'tryInvite') { st.invite = 'gipong'; st.authTab = 'daftar'; render(); return; }
+  if (t.id === 'copyInvite') { const v = document.getElementById('inviteLink').value; const pr = navigator.clipboard?.writeText(v); if (pr) pr.then(() => toast('Link ajak disalin'), () => { document.getElementById('inviteLink').select(); toast('Tekan lama untuk menyalin', true); }); else { document.getElementById('inviteLink').select(); toast('Tekan lama untuk menyalin', true); } return; }
   // referral portal
   if (d.fix) { const p = pById(d.fix); st.fixOf = p.id; st.regDraft = { name: p.name, wa: p.wa, email: p.email, cloud: p.cloud, notes: p.notes, date: p.availDate && p.availDate >= TODAY ? p.availDate : '', consent: false }; st.regTime = p.availTime || ''; st.regErr = {}; go('daftar'); toast(`Data ${p.name} sudah terisi. Perbaiki yang salah, lalu kirim lagi.`); return; }
   if (d.time) { st.regDraft = readReg(); st.regTime = st.regTime === d.time ? '' : d.time; saveDraft(); render(); return; }
@@ -1234,7 +1244,7 @@ document.addEventListener('submit', (evt) => {
     try {
       const r = st.authTab === 'daftar' ? signUp(st.aUser, st.aWa, document.getElementById('a-pw').value) : signIn(document.getElementById('a-id').value, document.getElementById('a-pw').value);
       const wasNew = st.authTab === 'daftar';
-      ME = r.id; Object.assign(st, { aUser: '', aWa: '', aId: '', aPw: '', chk: {}, authErr: {}, showPw: false, forgot: false });
+      ME = r.id; Object.assign(st, { aUser: '', aWa: '', aId: '', aPw: '', chk: {}, authErr: {}, showPw: false, forgot: false, invite: null });
       setRole('referral');
       toast(wasNew ? `Akun ${r.username} sudah jadi. Anda sudah masuk.` : `Anda masuk sebagai ${r.name}.`);
     } catch (e) { if (e.fields) { st.authErr = e.fields; st.aPw = document.getElementById('a-pw').value; render(); focusFirstError() || document.getElementById(st.authTab === 'daftar' ? 'a-user' : 'a-id').focus(); } else { console.error(e); toast('Belum berhasil. Coba lagi sebentar lagi.', true); } }
