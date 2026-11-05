@@ -1,6 +1,6 @@
 # Workflow v2: dari daftar akun sampai komisi cair
 
-Status: **sudah dibangun (5 Nov 2026), belum dipasang ke Supabase.** Database + portal di PR ReferralClaudeSystem#2, ERP di ERPClaudeKita#10. Keputusan owner K1–K8 sudah dijawab (bagian 9). Ditulis 5 Nov 2026 setelah audit database `ref` (live), portal
+Status: **sudah dibangun dan dipasang ke Supabase (5 Nov 2026).** Database + portal di PR ReferralClaudeSystem#2, ERP di ERPClaudeKita#10. Keputusan owner K1–K8 sudah dijawab (bagian 9). Ditulis 5 Nov 2026 setelah audit database `ref` (live), portal
 (`ReferralClaudeSystem`, PR #2), dan modul Referral di ERP (`ERPClaudeKita`, main `6afe52c`).
 Dokumen ini jadi pegangan untuk yang membangun (Sonnet). Bagian 8 berisi aturan kerjanya.
 

@@ -1,8 +1,8 @@
 -- Workflow v2 (docs/WORKFLOW-V2.md): H-1 through the referral, confirmation by the referral in the portal,
 -- commission rate per referral (default Rp75.000), "can do on which weekdays", the participant's account password in
 -- Vault, a 21.00 confirmation deadline, editable settings.
--- STATUS: NOT applied to the Supabase project yet. Apply only after the owner has agreed (it renames two RPC signatures
--- the portal and ERP call, so the portal/ERP builds of the same change must be deployed together).
+-- STATUS: applied to the Supabase project vfttmslrjimbndseqqko on 2026-11-05 (owner agreed). It renamed two RPC
+-- signatures (submit_participant, update_my_participant), so the portal and ERP builds of the same change go with it.
 --
 -- Every new function: security definer, search_path empty, role checked first, EXECUTE revoked from public/anon
 -- (anon has schema usage since the sign-up migration, so a default PUBLIC grant would expose it).
