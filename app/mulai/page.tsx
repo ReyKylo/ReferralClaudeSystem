@@ -32,7 +32,7 @@ export default function Mulai() {
 
   return (
     <div className="center-page">
-      <div style={{ width: 'min(640px, 100%)' }} className="grid">
+      <div style={{ width: 'min(640px, 100%)' }} className="grid mulai">
         <div className="brand-top"><Logo /></div>
         <section className="card card-pad grid" style={{ gap: 'var(--s5)' }}>
           <div className="grid" style={{ gap: 'var(--s2)' }}>
@@ -41,7 +41,7 @@ export default function Mulai() {
           </div>
           <ol className="steps">
             {steps.map(([title, text], i) => (
-              <li key={title}><span className="step-no num" aria-hidden="true">{i + 1}</span><div><b>{title}</b><p className="meta-t">{text}</p></div></li>
+              <li key={title} style={{ '--i': i } as React.CSSProperties}><span className="step-no num" aria-hidden="true">{i + 1}</span><div><b>{title}</b><p className="meta-t">{text}</p></div></li>
             ))}
           </ol>
           <div className="note ic"><Icon id="i-alert" /><div>
@@ -58,7 +58,7 @@ export default function Mulai() {
           </div>
         </section>
 
-        <section className="grid" style={{ gap: 'var(--s2)' }}>
+        <section className="grid faq" style={{ gap: 'var(--s2)' }}>
           <h2>Pertanyaan yang sering muncul</h2>
           <details className="more"><summary>Kenapa nomor saya ditolak?</summary><div><p>Alasannya ditulis di halaman Nomor. Yang paling sering: nomor WhatsApp tidak aktif, atau nomor atau email itu sudah didaftarkan orang lain. Ganti datanya, isi password lagi, lalu kirim ulang.</p></div></details>
           <details className="more"><summary>Bagaimana kalau nomornya tidak bisa besok?</summary><div><p>Tandai Tidak bisa sebelum jam {deadline}. Nomornya kembali ke antrean dan tim mencarikan jadwal baru.</p></div></details>

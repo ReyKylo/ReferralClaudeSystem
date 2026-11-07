@@ -342,3 +342,48 @@ button.row:hover, a.row:hover { background: var(--surface-2); }
 .step-no { width: 32px; height: 32px; display: grid; place-items: center; border-radius: var(--r); background: var(--btn-2-bg); color: var(--btn-2-fg); font-weight: 700; }
 .steps b { display: block; }
 .plain { margin: var(--s2) 0 0; padding-left: var(--s5); display: grid; gap: var(--s1); }
+
+/* ---------- Cara mulai: motion ----------
+   Card rises in, the steps follow one by one while a dashed road marking draws down between the numbers,
+   the last number (Tarik saldo) lands in Cone Orange. FAQ answers slide open. Everything sits inside
+   prefers-reduced-motion: no-preference, so the page is static for anyone who asked for less motion.
+   Each step carries --i (its index) for the stagger. */
+.mulai .steps li { position: relative; }
+.mulai .steps li:not(:last-child)::after {
+  content: ""; position: absolute; left: 15px; top: 38px; bottom: calc(-1 * var(--s4) + 6px); width: 2px;
+  background: repeating-linear-gradient(to bottom, var(--line-strong) 0 6px, transparent 6px 12px);
+}
+.mulai .steps li:last-child .step-no { background: var(--accent); color: var(--on-accent); }
+.mulai .head-actions .btn { transition: transform .18s cubic-bezier(.22,1,.36,1), box-shadow .18s cubic-bezier(.22,1,.36,1), background-color .15s; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .mulai { --ease: cubic-bezier(.22,1,.36,1); --pop: cubic-bezier(.34,1.56,.64,1); --stagger: 90ms; --start: 220ms; }
+  .mulai .brand-top { animation: m-drop .5s var(--ease) both; }
+  .mulai > .card { animation: m-rise .55s var(--ease) 80ms both; }
+
+  /* steps: text slides in, number pops, road marking draws down to the next number */
+  .mulai .steps li > div { animation: m-slide .5s var(--ease) both; animation-delay: calc(var(--start) + var(--i, 0) * var(--stagger)); }
+  .mulai .step-no { animation: m-pop .45s var(--pop) both; animation-delay: calc(var(--start) + var(--i, 0) * var(--stagger)); transition: background-color .2s, color .2s, transform .2s var(--pop); }
+  .mulai .steps li:not(:last-child)::after { transform-origin: top; animation: m-draw .35s var(--ease) both; animation-delay: calc(var(--start) + 120ms + var(--i, 0) * var(--stagger)); }
+  .mulai .steps li:last-child .step-no { animation: m-pop .45s var(--pop) both, m-glow 1.6s ease-out both; animation-delay: calc(var(--start) + 6 * var(--stagger)), calc(var(--start) + 6 * var(--stagger) + 300ms); }
+  .mulai .steps li:hover .step-no { background: var(--accent); color: var(--on-accent); transform: translateY(-2px) rotate(-4deg); }
+
+  .mulai .note { animation: m-rise .5s var(--ease) both; animation-delay: calc(var(--start) + 7 * var(--stagger)); }
+  .mulai .head-actions { animation: m-rise .5s var(--ease) both; animation-delay: calc(var(--start) + 8 * var(--stagger)); }
+  .mulai .head-actions .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px -8px rgba(11, 31, 36, .45); }
+  .mulai .head-actions .btn:active { transform: translateY(0) scale(.98); box-shadow: none; }
+
+  .mulai .faq { animation: m-rise .5s var(--ease) both; animation-delay: calc(var(--start) + 9 * var(--stagger)); }
+  .mulai details.more { transition: border-color .2s, background-color .2s; }
+  .mulai details.more:hover { border-color: var(--line-strong); }
+  .mulai details.more[open] { background: var(--surface); border-style: solid; }
+  .mulai details.more[open] > div { animation: m-open .28s var(--ease) both; }
+
+  @keyframes m-drop { from { opacity: 0; transform: translateY(-10px); } }
+  @keyframes m-rise { from { opacity: 0; transform: translateY(14px); } }
+  @keyframes m-slide { from { opacity: 0; transform: translateX(-10px); } }
+  @keyframes m-pop { from { opacity: 0; transform: scale(.4) rotate(-12deg); } }
+  @keyframes m-draw { from { transform: scaleY(0); } }
+  @keyframes m-open { from { opacity: 0; transform: translateY(-6px); } }
+  @keyframes m-glow { 0% { box-shadow: 0 0 0 0 rgba(255, 91, 31, .55); } 100% { box-shadow: 0 0 0 14px rgba(255, 91, 31, 0); } }
+}
